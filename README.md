@@ -59,6 +59,38 @@ dotnet run --project src/FinTracker.Web
 
 Остановка: `docker compose down` (данные БД сохраняются в volume `fintracker-pgdata`).
 
+### Docker Hub
+
+Образ: [alxctf/fintracker](https://hub.docker.com/r/alxctf/fintracker) (теги `latest`, `main`).
+
+**Важно:** один только контейнер `alxctf/fintracker` не запустится — внутри него `localhost` это не ваша БД на ПК. Нужен PostgreSQL рядом.
+
+**Правильный запуск (приложение + БД):**
+
+```bash
+docker compose -f docker-compose.hub.yml up -d
+```
+
+Остановка: `docker compose -f docker-compose.hub.yml down`
+
+**На другом компьютере (Windows / macOS / Linux)** — только Docker, без сборки:
+
+```bash
+mkdir fintracker && cd fintracker
+curl -fsSL -o docker-compose.hub.yml https://raw.githubusercontent.com/alx-ctf/finance/main/docker-compose.hub.yml
+docker compose -f docker-compose.hub.yml up -d
+```
+
+Открыть http://localhost:8080
+
+Если PostgreSQL уже крутится на хосте (`localhost:5432`), можно так:
+
+```bash
+docker run -d -p 8080:8080 \
+  -e ConnectionStrings__DefaultConnection="Host=host.docker.internal;Port=5432;Database=fintracker;Username=finuser;Password=finpass" \
+  alxctf/fintracker:latest
+```
+
 ## Локальная разработка
 
 1. PostgreSQL на `localhost:5432` (см. `appsettings.Development.json` или `docker compose -f docker-compose.db.yml up -d`)
