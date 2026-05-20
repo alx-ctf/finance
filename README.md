@@ -2,6 +2,12 @@
 
 Веб-приложение на **.NET 10**, **Blazor Server**, **EF Core Code First**, **PostgreSQL**.
 
+| | Ссылка |
+|---|--------|
+| GitHub | https://github.com/alx-ctf/finance |
+| Docker Hub | https://hub.docker.com/r/alxctf/fintracker |
+| Запуск одной командой | см. [DOCKER-HUB.md](DOCKER-HUB.md) |
+
 ## Возможности
 
 - Учёт доходов и расходов по счетам и категориям
