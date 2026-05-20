@@ -1,0 +1,59 @@
+@inject IBudgetService BudgetService
+@inject ICategoryService CategoryService
+@inject CurrentUserService CurrentUser
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudSelect T="int" @bind-Value="_model.CategoryId" Label="Категория расходов" Class="mb-3">
+            @foreach (var c in _categories)
+            {
+                <MudSelectItem Value="c.Id">@c.Name</MudSelectItem>
+            }
+        </MudSelect>
+        <MudNumericField T="decimal" @bind-Value="_model.LimitAmount" Label="Лимит" Min="1" Class="mb-3" />
+        <MudNumericField T="int" @bind-Value="_model.Year" Label="Год" Class="mb-3" />
+        <MudNumericField T="int" @bind-Value="_model.Month" Label="Месяц" Min="1" Max="12" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Отмена</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Сохранить</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private CreateBudgetDto _model = new()
+    {
+        Year = DateTime.Today.Year,
+        Month = DateTime.Today.Month
+    };
+    private List<CategoryDto> _categories = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+        _categories = (await CategoryService.GetAllAsync(userId, TransactionType.Expense)).ToList();
+        if (_categories.Count > 0)
+            _model.CategoryId = _categories[0].Id;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+        try
+        {
+            await BudgetService.CreateAsync(userId, _model);
+            Snackbar.Add("Бюджет создан", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

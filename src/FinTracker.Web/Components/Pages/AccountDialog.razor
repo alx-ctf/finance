@@ -1,0 +1,45 @@
+@inject IAccountService AccountService
+@inject CurrentUserService CurrentUser
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="_model.Name" Label="Название" Required="true" Class="mb-3" />
+        <MudSelect T="AccountType" @bind-Value="_model.Type" Label="Тип" Class="mb-3">
+            @foreach (AccountType t in Enum.GetValues<AccountType>())
+            {
+                <MudSelectItem Value="t">@t</MudSelectItem>
+            }
+        </MudSelect>
+        <MudNumericField T="decimal" @bind-Value="_model.InitialBalance" Label="Начальный баланс" Class="mb-3" />
+        <MudTextField @bind-Value="_model.Currency" Label="Валюта" Class="mb-3" />
+        <MudTextField @bind-Value="_model.Description" Label="Описание" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Отмена</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Сохранить</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private CreateAccountDto _model = new();
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+        try
+        {
+            await AccountService.CreateAsync(userId, _model);
+            Snackbar.Add("Счёт создан", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

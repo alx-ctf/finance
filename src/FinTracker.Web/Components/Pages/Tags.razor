@@ -1,0 +1,61 @@
+@page "/tags"
+@attribute [Authorize]
+@inject ITagService TagService
+@inject CurrentUserService CurrentUser
+@inject ISnackbar Snackbar
+
+<PageTitle>Теги</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Теги</MudText>
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudTextField @bind-Value="_newName" Label="Название" />
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudTextField @bind-Value="_newColor" Label="Цвет" />
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync" Class="mt-4">Добавить</MudButton>
+    </MudItem>
+</MudGrid>
+
+<MudChipSet T="string">
+    @foreach (var t in _items)
+    {
+        <MudChip T="string" Style="@($"background:{t.Color}")" OnClose="() => DeleteAsync(t.Id)">@t.Name</MudChip>
+    }
+</MudChipSet>
+
+@code {
+    private List<TagDto> _items = [];
+    private string _newName = "";
+    private string _newColor = "#9E9E9E";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is not null)
+            _items = (await TagService.GetAllAsync(userId)).ToList();
+    }
+
+    private async Task CreateAsync()
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null || string.IsNullOrWhiteSpace(_newName)) return;
+        await TagService.CreateAsync(userId, new CreateTagDto { Name = _newName, Color = _newColor });
+        _newName = "";
+        Snackbar.Add("Тег добавлен", Severity.Success);
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+        await TagService.DeleteAsync(id, userId);
+        await LoadAsync();
+    }
+}

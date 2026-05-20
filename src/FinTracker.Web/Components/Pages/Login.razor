@@ -1,0 +1,31 @@
+@page "/login"
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Вход</PageTitle>
+
+<MudPaper Class="pa-6 ma-auto" Style="max-width:400px;margin-top:80px" Elevation="3">
+    <MudText Typo="Typo.h5" Class="mb-4">Вход</MudText>
+    <MudTextField @bind-Value="_email" Label="Email" InputType="InputType.Email" Class="mb-3" />
+    <MudTextField @bind-Value="_password" Label="Пароль" InputType="InputType.Password" Class="mb-4" />
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="LoginAsync">Войти</MudButton>
+    <MudLink Href="/register" Class="mt-3 d-block">Регистрация</MudLink>
+    <MudAlert Severity="Severity.Info" Class="mt-3" Dense="true">
+        Демо: demo@fintracker.local / Demo123!
+    </MudAlert>
+</MudPaper>
+
+@code {
+    private string _email = "";
+    private string _password = "";
+
+    private async Task LoginAsync()
+    {
+        var result = await SignInManager.PasswordSignInAsync(_email, _password, isPersistent: true, lockoutOnFailure: false);
+        if (result.Succeeded)
+            Navigation.NavigateTo("/", forceLoad: true);
+        else
+            Snackbar.Add("Неверный email или пароль", Severity.Error);
+    }
+}

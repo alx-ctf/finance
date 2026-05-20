@@ -1,0 +1,107 @@
+@page "/transactions"
+@attribute [Authorize]
+@inject ITransactionService TransactionService
+@inject IAccountService AccountService
+@inject ICategoryService CategoryService
+@inject ITagService TagService
+@inject CurrentUserService CurrentUser
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Транзакции</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h4">Транзакции</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+               OnClick="OpenCreateDialog">Добавить</MudButton>
+</MudStack>
+
+<MudTable Items="_items" Hover="true" Loading="_loading" Dense="true">
+    <HeaderContent>
+        <MudTh>Дата</MudTh>
+        <MudTh>Тип</MudTh>
+        <MudTh>Категория</MudTh>
+        <MudTh>Счёт</MudTh>
+        <MudTh Align="Align.End">Сумма</MudTh>
+        <MudTh>Теги</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Date.ToString("dd.MM.yyyy")</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@(context.Type == TransactionType.Income ? Color.Success : Color.Error)">
+                @(context.Type == TransactionType.Income ? "Доход" : "Расход")
+            </MudChip>
+        </MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Style="@($"background:{context.CategoryColor}")">@context.CategoryName</MudChip>
+        </MudTd>
+        <MudTd>@context.AccountName</MudTd>
+        <MudTd Align="Align.End">
+            <span style="color:@(context.Type == TransactionType.Income ? "green" : "red")">
+                @(context.Type == TransactionType.Income ? "+" : "-")@context.Amount.ToString("N2")
+            </span>
+        </MudTd>
+        <MudTd>@string.Join(", ", context.Tags)</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => OpenEditDialog(context)" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                           OnClick="() => DeleteAsync(context.Id)" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<TransactionDto> _items = [];
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is not null)
+            _items = (await TransactionService.GetAllAsync(userId)).ToList();
+        _loading = false;
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var parameters = new DialogParameters<TransactionDialog> { { x => x.IsEdit, false } };
+        var dialog = await DialogService.ShowAsync<TransactionDialog>("Новая транзакция", parameters);
+        if ((await dialog.Result)?.Canceled == false)
+            await LoadAsync();
+    }
+
+    private async Task OpenEditDialog(TransactionDto item)
+    {
+        var parameters = new DialogParameters<TransactionDialog>
+        {
+            { x => x.IsEdit, true },
+            { x => x.TransactionId, item.Id },
+            { x => x.Model, new CreateTransactionDto
+                {
+                    AccountId = item.AccountId,
+                    CategoryId = item.CategoryId,
+                    Amount = item.Amount,
+                    Type = item.Type,
+                    Date = item.Date,
+                    Note = item.Note
+                }
+            }
+        };
+        var dialog = await DialogService.ShowAsync<TransactionDialog>("Редактирование", parameters);
+        if ((await dialog.Result)?.Canceled == false)
+            await LoadAsync();
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+        await TransactionService.DeleteAsync(id, userId);
+        Snackbar.Add("Транзакция удалена", Severity.Success);
+        await LoadAsync();
+    }
+}

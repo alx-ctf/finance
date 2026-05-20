@@ -1,0 +1,111 @@
+@page "/"
+@attribute [Authorize]
+@inject IDashboardService DashboardService
+@inject CurrentUserService CurrentUser
+
+<PageTitle>Дашборд</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Дашборд</MudText>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else if (_summary is not null)
+{
+    <MudGrid Spacing="3" Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2">Баланс счетов</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Primary">@_summary.Balance.ToString("N2") ₽</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2">Доходы (месяц)</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Success">+@_summary.TotalIncome.ToString("N2") ₽</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2">Расходы (месяц)</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Error">-@_summary.TotalExpense.ToString("N2") ₽</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2">Чистый поток</MudText>
+                <MudText Typo="Typo.h5">@_summary.NetIncome.ToString("N2") ₽</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">Расходы по категориям</MudText>
+                @if (_byCategory.Count > 0)
+                {
+                    <MudChart T="double" ChartType="ChartType.Donut" InputData="@_chartData" InputLabels="@_chartLabels"
+                              Width="100%" Height="280px" ChartOptions="@_donutOptions" />
+                }
+                else
+                {
+                    <MudText>Нет данных за текущий месяц</MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">Динамика за 6 месяцев</MudText>
+                @if (_trend.Count > 0)
+                {
+                    <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_lineSeries"
+                              XAxisLabels="@_trendLabels" Width="100%" Height="280px"
+                              ChartOptions="@_lineOptions" />
+                }
+                else
+                {
+                    <MudText>Нет данных</MudText>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private bool _loading = true;
+    private DashboardSummaryDto? _summary;
+    private List<CategoryExpenseDto> _byCategory = [];
+    private List<MonthlyTrendDto> _trend = [];
+    private double[] _chartData = [];
+    private string[] _chartLabels = [];
+    private string[] _trendLabels = [];
+    private List<ChartSeries<double>> _lineSeries = [];
+    private readonly ChartOptions _donutOptions = new() { ShowLegend = true };
+    private readonly ChartOptions _lineOptions = new() { ShowLegend = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+
+        var from = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        var to = from.AddMonths(1).AddDays(-1);
+
+        _summary = await DashboardService.GetSummaryAsync(userId, from, to);
+        _byCategory = (await DashboardService.GetExpensesByCategoryAsync(userId, from, to)).ToList();
+        _trend = (await DashboardService.GetMonthlyTrendAsync(userId, 6)).ToList();
+
+        _chartData = _byCategory.Select(c => (double)c.Amount).ToArray();
+        _chartLabels = _byCategory.Select(c => c.CategoryName).ToArray();
+        _trendLabels = _trend.Select(t => t.Label).ToArray();
+        _lineSeries =
+        [
+            new ChartSeries<double> { Name = "Доходы", Data = _trend.Select(t => (double)t.Income).ToArray() },
+            new ChartSeries<double> { Name = "Расходы", Data = _trend.Select(t => (double)t.Expense).ToArray() }
+        ];
+
+        _loading = false;
+    }
+}

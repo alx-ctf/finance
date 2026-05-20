@@ -1,0 +1,70 @@
+@page "/categories"
+@attribute [Authorize]
+@inject ICategoryService CategoryService
+@inject CurrentUserService CurrentUser
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Категории</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudText Typo="Typo.h4">Категории</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreate">Добавить</MudButton>
+</MudStack>
+
+<MudTabs>
+    <MudTabPanel Text="Расходы">
+        <MudTable Items="_expenses" Dense="true" Hover="true">
+            <RowTemplate>
+                <MudTd><MudChip T="string" Style="@($"background:{context.Color}")">@context.Name</MudChip></MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                   OnClick="() => DeleteAsync(context.Id)" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudTabPanel>
+    <MudTabPanel Text="Доходы">
+        <MudTable Items="_incomes" Dense="true" Hover="true">
+            <RowTemplate>
+                <MudTd><MudChip T="string" Style="@($"background:{context.Color}")">@context.Name</MudChip></MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                   OnClick="() => DeleteAsync(context.Id)" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private List<CategoryDto> _expenses = [];
+    private List<CategoryDto> _incomes = [];
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+        var all = (await CategoryService.GetAllAsync(userId)).ToList();
+        _expenses = all.Where(c => c.Type == TransactionType.Expense).ToList();
+        _incomes = all.Where(c => c.Type == TransactionType.Income).ToList();
+    }
+
+    private async Task OpenCreate()
+    {
+        var result = await DialogService.ShowAsync<CategoryDialog>("Новая категория");
+        if ((await result.Result)?.Canceled == false)
+            await LoadAsync();
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+        await CategoryService.DeleteAsync(id, userId);
+        Snackbar.Add("Категория удалена", Severity.Success);
+        await LoadAsync();
+    }
+}

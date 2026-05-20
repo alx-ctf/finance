@@ -1,0 +1,67 @@
+@page "/accounts"
+@attribute [Authorize]
+@inject IAccountService AccountService
+@inject CurrentUserService CurrentUser
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Счета</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudText Typo="Typo.h4">Счета</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+               OnClick="OpenCreate">Добавить</MudButton>
+</MudStack>
+
+<MudTable Items="_items" Hover="true" Loading="_loading">
+    <HeaderContent>
+        <MudTh>Название</MudTh>
+        <MudTh>Тип</MudTh>
+        <MudTh Align="Align.End">Баланс</MudTh>
+        <MudTh>Статус</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>@context.Type</MudTd>
+        <MudTd Align="Align.End">@context.Balance.ToString("N2") @context.Currency</MudTd>
+        <MudTd>@(context.IsActive ? "Активен" : "Закрыт")</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                           OnClick="() => DeleteAsync(context.Id)" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<AccountDto> _items = [];
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is not null)
+            _items = (await AccountService.GetAllAsync(userId)).ToList();
+        _loading = false;
+    }
+
+    private async Task OpenCreate()
+    {
+        var parameters = new DialogParameters<AccountDialog>();
+        var result = await DialogService.ShowAsync<AccountDialog>("Новый счёт", parameters);
+        if ((await result.Result)?.Canceled == false)
+            await LoadAsync();
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+        await AccountService.DeleteAsync(id, userId);
+        Snackbar.Add("Счёт удалён", Severity.Success);
+        await LoadAsync();
+    }
+}

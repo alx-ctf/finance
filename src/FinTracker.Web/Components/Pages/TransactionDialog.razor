@@ -1,0 +1,106 @@
+@inject ITransactionService TransactionService
+@inject IAccountService AccountService
+@inject ICategoryService CategoryService
+@inject ITagService TagService
+@inject CurrentUserService CurrentUser
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_valid">
+            <MudSelect T="TransactionType" Value="_model.Type" ValueChanged="OnTypeChanged" Label="Тип" Required="true" Class="mb-3">
+                <MudSelectItem Value="TransactionType.Expense">Расход</MudSelectItem>
+                <MudSelectItem Value="TransactionType.Income">Доход</MudSelectItem>
+            </MudSelect>
+            <MudSelect T="int" @bind-Value="_model.AccountId" Label="Счёт" Required="true" Class="mb-3">
+                @foreach (var a in _accounts)
+                {
+                    <MudSelectItem Value="a.Id">@a.Name (@a.Balance.ToString("N2") @a.Currency)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="int" @bind-Value="_model.CategoryId" Label="Категория" Required="true" Class="mb-3">
+                @foreach (var c in _categories.Where(c => c.Type == _model.Type))
+                {
+                    <MudSelectItem Value="c.Id">@c.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudNumericField T="decimal" @bind-Value="_model.Amount" Label="Сумма" Min="0.01m" Required="true" Class="mb-3" />
+            <MudDatePicker @bind-Date="_date" Label="Дата" Required="true" Class="mb-3" />
+            <MudTextField @bind-Value="_model.Note" Label="Комментарий" Lines="2" Class="mb-3" />
+            <MudSelect T="int" @bind-SelectedValues="_selectedTags" Label="Теги" MultiSelection="true"
+                       ToStringFunc="@(id => _tags.FirstOrDefault(t => t.Id == id)?.Name ?? "")">
+                @foreach (var t in _tags)
+                {
+                    <MudSelectItem Value="t.Id">@t.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Отмена</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="!_valid">Сохранить</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public bool IsEdit { get; set; }
+    [Parameter] public int? TransactionId { get; set; }
+    [Parameter] public CreateTransactionDto Model { get; set; } = new();
+
+    private MudForm? _form;
+    private bool _valid;
+    private CreateTransactionDto _model = new();
+    private DateTime? _date = DateTime.Today;
+    private List<AccountDto> _accounts = [];
+    private List<CategoryDto> _categories = [];
+    private List<TagDto> _tags = [];
+    private IReadOnlyCollection<int> _selectedTags = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _model = Model;
+        _date = _model.Date;
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+        _accounts = (await AccountService.GetAllAsync(userId)).ToList();
+        _categories = (await CategoryService.GetAllAsync(userId)).ToList();
+        _tags = (await TagService.GetAllAsync(userId)).ToList();
+        _selectedTags = _model.TagIds;
+    }
+
+    private void OnTypeChanged(TransactionType type)
+    {
+        _model.Type = type;
+        if (_categories.All(c => c.Id != _model.CategoryId || c.Type != type))
+            _model.CategoryId = _categories.FirstOrDefault(c => c.Type == type)?.Id ?? 0;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        await _form!.ValidateAsync();
+        if (!_valid) return;
+
+        _model.Date = _date ?? DateTime.Today;
+        _model.TagIds = _selectedTags.ToList();
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId is null) return;
+
+        try
+        {
+            if (IsEdit && TransactionId.HasValue)
+                await TransactionService.UpdateAsync(TransactionId.Value, userId, _model);
+            else
+                await TransactionService.CreateAsync(userId, _model);
+
+            Snackbar.Add("Сохранено", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}
