@@ -30,6 +30,8 @@ services:
 
   app:
     image: alxctf/fintracker:latest
+    # На Apple Silicon (M1/M2/M3) без arm64-образа — эмуляция amd64; после multi-arch push на Hub можно убрать
+    platform: ${FINTRACKER_PLATFORM:-linux/amd64}
     container_name: fintracker-app
     restart: unless-stopped
     depends_on:

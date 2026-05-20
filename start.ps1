@@ -10,6 +10,11 @@ Set-Location $Dir
 
 Invoke-WebRequest -Uri $ComposeUrl -OutFile "docker-compose.hub.yml" -UseBasicParsing
 
+# Apple Silicon (если когда-нибудь запускают PowerShell на Mac)
+if (-not $env:FINTRACKER_PLATFORM -and (docker info -f '{{.Architecture}}' 2>$null) -match 'aarch64|arm64') {
+    $env:FINTRACKER_PLATFORM = 'linux/amd64'
+}
+
 docker compose -f docker-compose.hub.yml pull
 docker compose -f docker-compose.hub.yml up -d
 

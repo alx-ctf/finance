@@ -17,6 +17,11 @@ else
   exit 1
 fi
 
+# Apple Silicon: образ amd64 через эмуляцию, пока на Hub нет arm64 (или после pull native arm64)
+if [ "$(uname -m)" = "arm64" ] && [ -z "${FINTRACKER_PLATFORM:-}" ]; then
+  export FINTRACKER_PLATFORM=linux/amd64
+fi
+
 docker compose -f docker-compose.hub.yml pull
 docker compose -f docker-compose.hub.yml up -d
 

@@ -91,6 +91,8 @@ docker compose -f docker-compose.hub.yml down
 docker compose -f docker-compose.hub.yml up -d
 ```
 
+**Mac (Apple Silicon M1/M2/M3):** если ошибка `no matching manifest for linux/arm64` — обновите скрипт с GitHub (в compose включён `platform: linux/amd64`) или дождитесь образа с arm64 на Hub.
+
 **Важно:** не запускайте в Docker Desktop один контейнер `alxctf/fintracker` без БД.
 
 Если PostgreSQL уже на хосте (`localhost:5432`):
