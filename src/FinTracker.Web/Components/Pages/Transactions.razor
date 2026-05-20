@@ -22,6 +22,7 @@
             <MudTh>Категория</MudTh>
             <MudTh>Счёт</MudTh>
             <MudTh Style="text-align:right">Сумма</MudTh>
+            <MudTh>Комментарий</MudTh>
             <MudTh>Теги</MudTh>
             <MudTh></MudTh>
         </HeaderContent>
@@ -41,7 +42,17 @@
                     @(context.Type == TransactionType.Income ? "+" : "-")@context.Amount.ToString("N2")
                 </span>
             </MudTd>
-            <MudTd>@string.Join(", ", context.Tags)</MudTd>
+            <MudTd Class="ft-note-cell">
+                @if (!string.IsNullOrWhiteSpace(context.Note))
+                {
+                    <span class="ft-note-text" title="@context.Note">@context.Note</span>
+                }
+                else
+                {
+                    <span class="ft-note-empty">—</span>
+                }
+            </MudTd>
+            <MudTd Class="ft-tags-cell">@string.Join(", ", context.Tags)</MudTd>
             <MudTd Class="ft-table-actions">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => OpenEditDialog(context)" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"

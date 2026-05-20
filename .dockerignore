@@ -1,0 +1,40 @@
+# Git и IDE
+.git
+.gitignore
+.vs
+.idea
+*.user
+*.suo
+
+# Сборка и зависимости
+**/bin/
+**/obj/
+**/out/
+**/.vs/
+
+# Тесты (не нужны в образе приложения)
+tests/
+
+# Локальные данные и секреты
+pgdata/
+.env
+.env.*
+!/.env.example
+**/appsettings.*.local.json
+
+# Документация и прочее
+**/*.md
+!src/FinTracker.Web/wwwroot/css/README.md
+.cursor/
+assets/
+
+# Локальный publish / артефакты
+.publish-docker/
+.publish-test/
+agent-tools/
+assets/
+
+# Docker (контекст сборки)
+Dockerfile*
+docker-compose*
+.dockerignore

@@ -67,3 +67,17 @@ html, body {
     color: var(--ft-color-expense);
     font-weight: 500;
 }
+
+/* MudBlazor: читаемость таблиц в тёмной теме */
+.ft-layout .mud-table .mud-table-cell,
+.ft-layout .mud-table .mud-table-head .mud-table-cell {
+    color: var(--ft-color-text);
+}
+
+.ft-layout .mud-table .mud-table-row:hover {
+    background-color: rgba(13, 148, 136, 0.06) !important;
+}
+
+[data-theme="dark"] .ft-layout .mud-table .mud-table-row:hover {
+    background-color: rgba(45, 212, 191, 0.08) !important;
+}

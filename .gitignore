@@ -7,3 +7,5 @@ obj/
 appsettings.*.local.json
 .env
 pgdata/
+.publish-docker/
+.publish-test/

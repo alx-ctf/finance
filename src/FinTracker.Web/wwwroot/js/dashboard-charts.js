@@ -1,5 +1,16 @@
 const charts = {};
 
+/** Ждём загрузки Chart.js (локальный скрипт в <head> или CDN) */
+export async function ensureChartReady(maxAttempts = 50) {
+    if (window.Chart) return true;
+    for (let i = 0; i < maxAttempts; i++) {
+        await new Promise((r) => setTimeout(r, 100));
+        if (window.Chart) return true;
+    }
+    console.warn('Chart.js не загружен — графики не отрисованы');
+    return false;
+}
+
 function destroy(id) {
     if (charts[id]) {
         charts[id].destroy();
@@ -36,10 +47,15 @@ function themeColors() {
     };
 }
 
-export function renderDonut(canvasId, labels, values) {
+function canRender(canvasId) {
     const canvas = document.getElementById(canvasId);
-    if (!canvas || !window.Chart) return;
+    return canvas && window.Chart;
+}
 
+export function renderDonut(canvasId, labels, values) {
+    if (!canRender(canvasId)) return false;
+
+    const canvas = document.getElementById(canvasId);
     destroy(canvasId);
     const { legend, palette } = themeColors();
 
@@ -67,13 +83,14 @@ export function renderDonut(canvasId, labels, values) {
             }
         }
     });
+    return true;
 }
 
 /** Доходы и расходы — два отдельных столбца с чётким разделением */
 export function renderIncomeExpenseCompare(canvasId, income, expense) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas || !window.Chart) return;
+    if (!canRender(canvasId)) return false;
 
+    const canvas = document.getElementById(canvasId);
     destroy(canvasId);
     const { tick, grid, legend, income: inc, incomeGlow, expense: exp, expenseGlow } = themeColors();
 
@@ -121,12 +138,13 @@ export function renderIncomeExpenseCompare(canvasId, income, expense) {
             }
         }
     });
+    return true;
 }
 
 export function renderBar(canvasId, labels, datasets, horizontal = false) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas || !window.Chart) return;
+    if (!canRender(canvasId)) return false;
 
+    const canvas = document.getElementById(canvasId);
     destroy(canvasId);
     const { tick, grid, legend, palette, primary } = themeColors();
 
@@ -178,12 +196,13 @@ export function renderBar(canvasId, labels, datasets, horizontal = false) {
             }
         }
     });
+    return true;
 }
 
 export function renderLine(canvasId, labels, datasets) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas || !window.Chart) return;
+    if (!canRender(canvasId)) return false;
 
+    const canvas = document.getElementById(canvasId);
     destroy(canvasId);
     const { tick, grid, legend, income, incomeGlow, expense, expenseGlow, primary, accent } = themeColors();
 
@@ -242,6 +261,7 @@ export function renderLine(canvasId, labels, datasets) {
             }
         }
     });
+    return true;
 }
 
 export function disposeAll() {

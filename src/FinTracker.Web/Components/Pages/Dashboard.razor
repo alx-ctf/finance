@@ -1,5 +1,6 @@
 @page "/"
 @attribute [Authorize]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject IDashboardService DashboardService
 @inject IBudgetService BudgetService
 @inject CurrentUserService CurrentUser
@@ -194,6 +195,7 @@
 @code {
     private bool _loading = true;
     private bool _chartsDrawn;
+    private int _chartDrawAttempts;
     private DashboardSummaryDto? _summary;
     private List<CategoryExpenseDto> _byCategory = [];
     private List<AccountExpenseDto> _byAccount = [];
@@ -232,17 +234,35 @@
         if (_loading || _summary is null || _chartsDrawn)
             return;
 
-        await DrawChartsAsync();
-        _chartsDrawn = true;
+        if (!RendererInfo.IsInteractive)
+            return;
+
+        if (await DrawChartsAsync())
+        {
+            _chartsDrawn = true;
+            _chartDrawAttempts = 0;
+            return;
+        }
+
+        if (_chartDrawAttempts++ < 20)
+        {
+            await Task.Delay(150);
+            StateHasChanged();
+        }
     }
 
-    private async Task DrawChartsAsync()
+    private async Task<bool> DrawChartsAsync()
     {
         _chartsModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/dashboard-charts.js");
 
+        if (!await _chartsModule.InvokeAsync<bool>("ensureChartReady"))
+            return false;
+
+        var drawn = false;
+
         if (_byCategory.Count > 0)
         {
-            await _chartsModule.InvokeVoidAsync(
+            drawn |= await _chartsModule.InvokeAsync<bool>(
                 "renderDonut",
                 "chart-categories",
                 _byCategory.Select(c => c.CategoryName).ToArray(),
@@ -251,7 +271,7 @@
 
         if (_summary!.TotalIncome > 0 || _summary.TotalExpense > 0)
         {
-            await _chartsModule.InvokeVoidAsync(
+            drawn |= await _chartsModule.InvokeAsync<bool>(
                 "renderIncomeExpenseCompare",
                 "chart-income-expense",
                 (double)_summary.TotalIncome,
@@ -260,7 +280,7 @@
 
         if (_byAccount.Count > 0)
         {
-            await _chartsModule.InvokeVoidAsync(
+            drawn |= await _chartsModule.InvokeAsync<bool>(
                 "renderBar",
                 "chart-accounts",
                 _byAccount.Select(a => a.AccountName).ToArray(),
@@ -271,7 +291,7 @@
         if (_trend.Count > 0)
         {
             var labels = _trend.Select(t => t.Label).ToArray();
-            await _chartsModule.InvokeVoidAsync(
+            drawn |= await _chartsModule.InvokeAsync<bool>(
                 "renderLine",
                 "chart-trend",
                 labels,
@@ -283,7 +303,7 @@
 
             if (_trend.Any(t => t.Net != 0))
             {
-                await _chartsModule.InvokeVoidAsync(
+                drawn |= await _chartsModule.InvokeAsync<bool>(
                     "renderLine",
                     "chart-net",
                     labels,
@@ -293,7 +313,7 @@
 
         if (_budgets.Count > 0)
         {
-            await _chartsModule.InvokeVoidAsync(
+            drawn |= await _chartsModule.InvokeAsync<bool>(
                 "renderBar",
                 "chart-budgets",
                 _budgets.Select(b => b.CategoryName).ToArray(),
@@ -308,18 +328,21 @@
         if (_daily.Any(d => d.Amount > 0))
         {
             var daysWithData = _daily.Where(d => d.Amount > 0).ToList();
-            await _chartsModule.InvokeVoidAsync(
+            drawn |= await _chartsModule.InvokeAsync<bool>(
                 "renderBar",
                 "chart-daily",
                 daysWithData.Select(d => d.Label).ToArray(),
                 new[] { new { label = "Расходы", values = daysWithData.Select(d => (double)d.Amount).ToArray() } },
                 false);
         }
+
+        return drawn;
     }
 
     private void OnThemeChanged()
     {
         _chartsDrawn = false;
+        _chartDrawAttempts = 0;
         _ = InvokeAsync(async () =>
         {
             try

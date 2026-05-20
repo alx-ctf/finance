@@ -54,12 +54,18 @@
 /* Карточки MudBlazor */
 .ft-layout .mud-paper.ft-card,
 .ft-layout .mud-paper.ft-summary-card,
-.ft-layout .mud-paper.ft-chart-panel {
-    background: var(--ft-surface) !important;
+.ft-layout .mud-paper.ft-chart-panel,
+.ft-layout .mud-paper.ft-auth-card {
+    background-color: var(--ft-surface) !important;
+    color: var(--ft-color-text);
     border: var(--ft-card-border);
     border-radius: var(--ft-card-radius) !important;
     box-shadow: var(--ft-card-shadow);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.ft-layout .mud-table {
+    background-color: var(--ft-surface) !important;
 }
 
 .ft-layout .mud-paper.ft-card:hover,

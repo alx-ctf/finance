@@ -53,7 +53,7 @@
     private MudForm? _form;
     private bool _valid;
     private CreateTransactionDto _model = new();
-    private DateTime? _date = UtcDateHelper.TodayUtc();
+    private DateTime? _date = DateTime.Today;
     private List<AccountDto> _accounts = [];
     private List<CategoryDto> _categories = [];
     private List<TagDto> _tags = [];
@@ -62,13 +62,26 @@
     protected override async Task OnInitializedAsync()
     {
         _model = Model;
-        _date = _model.Date;
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;
         _accounts = (await AccountService.GetAllAsync(userId)).ToList();
         _categories = (await CategoryService.GetAllAsync(userId)).ToList();
         _tags = (await TagService.GetAllAsync(userId)).ToList();
         _selectedTags = _model.TagIds;
+
+        if (!IsEdit)
+        {
+            if (_model.Date == default || _model.Date.Year < 1900)
+                _model.Date = DateTime.Today;
+
+            if (_model.AccountId == 0 && _accounts.Count > 0)
+                _model.AccountId = _accounts[0].Id;
+
+            if (_model.CategoryId == 0)
+                _model.CategoryId = _categories.FirstOrDefault(c => c.Type == _model.Type)?.Id ?? 0;
+        }
+
+        _date = _model.Date.Year < 1900 ? DateTime.Today : _model.Date.Date;
     }
 
     private void OnTypeChanged(TransactionType type)
@@ -85,7 +98,7 @@
         await _form!.ValidateAsync();
         if (!_valid) return;
 
-        _model.Date = UtcDateHelper.ToUtcDate(_date ?? UtcDateHelper.TodayUtc());
+        _model.Date = UtcDateHelper.ToUtcDate(_date ?? DateTime.Today);
         _model.TagIds = _selectedTags.ToList();
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;

@@ -1,42 +1,62 @@
+# FinTracker — PostgreSQL + веб-приложение
+# Запуск:  docker compose up -d --build
+# Только БД: docker compose up -d db
+# URL:      http://localhost:${APP_PORT:-8080}
+
+name: fintracker
+
 services:
   db:
     image: postgres:16-alpine
     container_name: fintracker-db
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: fintracker
-      POSTGRES_USER: finuser
-      POSTGRES_PASSWORD: finpass
+      POSTGRES_DB: ${POSTGRES_DB:-fintracker}
+      POSTGRES_USER: ${POSTGRES_USER:-finuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-finpass}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U finuser -d fintracker"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-finuser} -d ${POSTGRES_DB:-fintracker}"]
       interval: 5s
       timeout: 5s
       retries: 10
-
-  redis:
-    image: redis:7-alpine
-    container_name: fintracker-redis
-    ports:
-      - "6379:6379"
-    profiles:
-      - with-redis
+      start_period: 10s
+    networks:
+      - fintracker
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    image: fintracker-app:latest
     container_name: fintracker-app
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=fintracker;Username=finuser;Password=finpass"
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;Port=5432;Database=${POSTGRES_DB:-fintracker};
+        Username=${POSTGRES_USER:-finuser};Password=${POSTGRES_PASSWORD:-finpass}
     ports:
-      - "8080:8080"
+      - "${APP_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    networks:
+      - fintracker
 
 volumes:
   pgdata:
+    name: fintracker-pgdata
+
+networks:
+  fintracker:
+    name: fintracker-net

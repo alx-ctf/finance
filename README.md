@@ -32,17 +32,36 @@
 
 ## Быстрый старт (Docker)
 
+Скопируйте переменные окружения (по желанию):
+
 ```bash
-docker compose up --build
+cp .env.example .env
+```
+
+**Всё в контейнерах** (приложение + PostgreSQL):
+
+```bash
+# BuildKit ускоряет повторные сборки (кэш NuGet)
+$env:DOCKER_BUILDKIT=1
+docker compose up -d --build
 ```
 
 Приложение: http://localhost:8080
 
+**Только БД** (приложение через `dotnet run` на http://localhost:5024):
+
+```bash
+docker compose -f docker-compose.db.yml up -d
+dotnet run --project src/FinTracker.Web
+```
+
 Демо-аккаунт: `demo@fintracker.local` / `Demo123!`
+
+Остановка: `docker compose down` (данные БД сохраняются в volume `fintracker-pgdata`).
 
 ## Локальная разработка
 
-1. PostgreSQL на `localhost:5432` (см. `appsettings.Development.json`)
+1. PostgreSQL на `localhost:5432` (см. `appsettings.Development.json` или `docker compose -f docker-compose.db.yml up -d`)
 2. Миграции:
 
 ```bash
