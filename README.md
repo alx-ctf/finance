@@ -59,31 +59,41 @@ dotnet run --project src/FinTracker.Web
 
 Остановка: `docker compose down` (данные БД сохраняются в volume `fintracker-pgdata`).
 
-### Docker Hub
+### Docker Hub — одна команда
 
-Образ: [alxctf/fintracker](https://hub.docker.com/r/alxctf/fintracker) (теги `latest`, `main`).
+Образ: [alxctf/fintracker](https://hub.docker.com/r/alxctf/fintracker). Нужен только **Docker** (без Git и без сборки).
 
-**Важно:** один только контейнер `alxctf/fintracker` не запустится — внутри него `localhost` это не ваша БД на ПК. Нужен PostgreSQL рядом.
+**Linux / macOS / Git Bash:**
 
-**Правильный запуск (приложение + БД):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/alx-ctf/finance/main/start.sh | sh
+```
+
+**Windows (PowerShell):**
+
+```powershell
+irm https://raw.githubusercontent.com/alx-ctf/finance/main/start.ps1 | iex
+```
+
+Скрипт скачает `docker-compose.hub.yml`, подтянет образы с Hub и запустит приложение + PostgreSQL.
+
+→ http://localhost:8080 · демо: `demo@fintracker.local` / `Demo123!`
+
+**Остановка** (из `%TEMP%\fintracker` или `/tmp/fintracker`):
+
+```bash
+docker compose -f docker-compose.hub.yml down
+```
+
+Если репозиторий уже склонирован — достаточно:
 
 ```bash
 docker compose -f docker-compose.hub.yml up -d
 ```
 
-Остановка: `docker compose -f docker-compose.hub.yml down`
+**Важно:** не запускайте в Docker Desktop один контейнер `alxctf/fintracker` без БД.
 
-**На другом компьютере (Windows / macOS / Linux)** — только Docker, без сборки:
-
-```bash
-mkdir fintracker && cd fintracker
-curl -fsSL -o docker-compose.hub.yml https://raw.githubusercontent.com/alx-ctf/finance/main/docker-compose.hub.yml
-docker compose -f docker-compose.hub.yml up -d
-```
-
-Открыть http://localhost:8080
-
-Если PostgreSQL уже крутится на хосте (`localhost:5432`), можно так:
+Если PostgreSQL уже на хосте (`localhost:5432`):
 
 ```bash
 docker run -d -p 8080:8080 \
