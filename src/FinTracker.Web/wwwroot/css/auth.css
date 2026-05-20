@@ -1,0 +1,154 @@
+/* === Страницы входа и регистрации (Login, Register, AuthLayout) === */
+
+.ft-auth-layout {
+    min-height: 100vh;
+    background: var(--ft-auth-gradient);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+    box-sizing: border-box;
+}
+
+.page-login,
+.page-register {
+    width: 100%;
+    max-width: 420px;
+}
+
+.ft-auth-toolbar {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+}
+
+.ft-auth-toolbar .ft-theme-toggle .mud-icon-button {
+    color: var(--ft-color-text);
+}
+
+.ft-auth-card {
+    background: var(--ft-surface);
+    border: var(--ft-card-border);
+    border-radius: var(--ft-radius-xl);
+    box-shadow: var(--ft-card-shadow), var(--ft-glow-primary);
+    padding: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ft-auth-title {
+    margin: 0 0 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ft-color-text);
+    font-family: var(--ft-font);
+}
+
+.ft-auth-error {
+    background: var(--ft-error-bg);
+    color: var(--ft-color-expense);
+    padding: 0.75rem 1rem;
+    border-radius: var(--ft-radius-sm);
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.ft-auth-form .ft-field {
+    margin-bottom: 1.25rem;
+}
+
+.ft-auth-form label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ft-color-text-secondary);
+    font-family: var(--ft-font);
+}
+
+.ft-auth-form input {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--ft-color-border);
+    color: var(--ft-color-text);
+    border-radius: var(--ft-radius-md);
+    font-size: 1rem;
+    font-family: var(--ft-font);
+    box-sizing: border-box;
+    background: var(--ft-input-bg);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ft-auth-form input:focus {
+    outline: none;
+    border-color: var(--ft-color-primary);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+    background: var(--ft-surface);
+}
+
+.ft-btn-primary {
+    display: block;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    margin-top: 0.5rem;
+    background: linear-gradient(135deg, var(--ft-color-primary) 0%, var(--ft-color-accent) 100%);
+    color: #fff;
+    border: none;
+    border-radius: var(--ft-radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--ft-font);
+    cursor: pointer;
+    transition: filter 0.2s, transform 0.1s, box-shadow 0.2s;
+    box-shadow: var(--ft-glow-primary);
+}
+
+.ft-btn-primary:hover {
+    filter: brightness(1.08);
+    box-shadow: var(--ft-glow-primary), 0 6px 20px rgba(13, 148, 136, 0.25);
+}
+
+.ft-btn-primary:active {
+    transform: scale(0.99);
+}
+
+.ft-auth-link-wrap {
+    text-align: center;
+    margin-top: 1.25rem;
+}
+
+.ft-auth-link {
+    color: var(--ft-color-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: var(--ft-font);
+}
+
+.ft-auth-link:hover {
+    text-decoration: underline;
+}
+
+.ft-demo-hint {
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
+    background: var(--ft-hint-bg);
+    color: var(--ft-hint-text);
+    border-radius: var(--ft-radius-md);
+    font-size: 0.85rem;
+    font-family: var(--ft-font);
+    line-height: 1.4;
+    border: 1px solid rgba(13, 148, 136, 0.2);
+}
+
+.ft-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--ft-color-muted);
+    margin-top: 0.35rem;
+    font-family: var(--ft-font);
+}

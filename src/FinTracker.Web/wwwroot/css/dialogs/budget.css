@@ -1,0 +1,4 @@
+/* === BudgetDialog.razor === */
+.dialog-budget .mud-dialog-content {
+    min-width: 320px;
+}

@@ -1,31 +1,65 @@
 @page "/login"
-@inject SignInManager<ApplicationUser> SignInManager
-@inject NavigationManager Navigation
-@inject ISnackbar Snackbar
+@layout AuthLayout
+@attribute [AllowAnonymous]
 
 <PageTitle>Вход</PageTitle>
 
-<MudPaper Class="pa-6 ma-auto" Style="max-width:400px;margin-top:80px" Elevation="3">
-    <MudText Typo="Typo.h5" Class="mb-4">Вход</MudText>
-    <MudTextField @bind-Value="_email" Label="Email" InputType="InputType.Email" Class="mb-3" />
-    <MudTextField @bind-Value="_password" Label="Пароль" InputType="InputType.Password" Class="mb-4" />
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="LoginAsync">Войти</MudButton>
-    <MudLink Href="/register" Class="mt-3 d-block">Регистрация</MudLink>
-    <MudAlert Severity="Severity.Info" Class="mt-3" Dense="true">
-        Демо: demo@fintracker.local / Demo123!
-    </MudAlert>
-</MudPaper>
+<div class="page-login">
+    <div class="ft-auth-card">
+        <h1 class="ft-auth-title">Вход</h1>
+
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <div class="ft-auth-error" role="alert">@_error</div>
+        }
+
+        <form method="post" action="@_loginAction" class="ft-auth-form">
+            <AntiforgeryToken />
+            <div class="ft-field">
+                <label for="email">Email</label>
+                <input id="email" type="email" name="Email" required autocomplete="username" placeholder="you@example.com" />
+            </div>
+            <div class="ft-field">
+                <label for="password">Пароль</label>
+                <input id="password" type="password" name="Password" required autocomplete="current-password" placeholder="••••••••" />
+            </div>
+            <button type="submit" class="ft-btn-primary">Войти</button>
+        </form>
+
+        <div class="ft-auth-link-wrap">
+            <a href="/register" class="ft-auth-link">Регистрация</a>
+        </div>
+
+        <div class="ft-demo-hint">
+            Демо: <strong>demo@fintracker.local</strong> / <strong>Demo123!</strong>
+        </div>
+    </div>
+</div>
 
 @code {
-    private string _email = "";
-    private string _password = "";
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? ErrorCode { get; set; }
 
-    private async Task LoginAsync()
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    private string? _error;
+    private string _loginAction = "/auth/login";
+
+    protected override void OnInitialized()
     {
-        var result = await SignInManager.PasswordSignInAsync(_email, _password, isPersistent: true, lockoutOnFailure: false);
-        if (result.Succeeded)
-            Navigation.NavigateTo("/", forceLoad: true);
-        else
-            Snackbar.Add("Неверный email или пароль", Severity.Error);
+        if (!string.IsNullOrWhiteSpace(ReturnUrl) &&
+            ReturnUrl.StartsWith('/') &&
+            !ReturnUrl.StartsWith("//"))
+        {
+            _loginAction = $"/auth/login?returnUrl={Uri.EscapeDataString(ReturnUrl)}";
+        }
+
+        _error = ErrorCode switch
+        {
+            "invalid" => "Неверный email или пароль",
+            "empty" => "Заполните email и пароль",
+            _ => null
+        };
     }
 }

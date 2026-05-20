@@ -2,10 +2,13 @@ using FinTracker.Application.DTOs;
 using FinTracker.Application.Interfaces;
 using FinTracker.Domain.Entities;
 using FinTracker.Domain.Enums;
+using FluentValidation;
 
 namespace FinTracker.Application.Services;
 
-public class CategoryService(ICategoryRepository categoryRepository) : ICategoryService
+public class CategoryService(
+    ICategoryRepository categoryRepository,
+    IValidator<CreateCategoryDto> validator) : ICategoryService
 {
     public async Task<IReadOnlyList<CategoryDto>> GetAllAsync(
         string userId,
@@ -24,6 +27,8 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
     public async Task<CategoryDto> CreateAsync(string userId, CreateCategoryDto dto, CancellationToken cancellationToken = default)
     {
+        await validator.ValidateAndThrowAsync(dto, cancellationToken);
+
         var category = new Category
         {
             UserId = userId,
@@ -39,8 +44,16 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
     public async Task<CategoryDto> UpdateAsync(int id, string userId, CreateCategoryDto dto, CancellationToken cancellationToken = default)
     {
+        await validator.ValidateAndThrowAsync(dto, cancellationToken);
+
         var category = await categoryRepository.GetByIdAsync(id, userId, cancellationToken)
             ?? throw new InvalidOperationException("Category not found.");
+
+        if (category.Type != dto.Type &&
+            await categoryRepository.HasTransactionsAsync(id, userId, cancellationToken))
+        {
+            throw new InvalidOperationException("Cannot change category type when it has transactions.");
+        }
 
         category.Name = dto.Name;
         category.Type = dto.Type;

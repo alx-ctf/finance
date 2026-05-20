@@ -15,6 +15,7 @@ public class TransactionDto
     public DateTime Date { get; set; }
     public string? Note { get; set; }
     public List<string> Tags { get; set; } = [];
+    public List<int> TagIds { get; set; } = [];
 }
 
 public class CreateTransactionDto
@@ -23,7 +24,7 @@ public class CreateTransactionDto
     public int CategoryId { get; set; }
     public decimal Amount { get; set; }
     public TransactionType Type { get; set; }
-    public DateTime Date { get; set; } = DateTime.Today;
+    public DateTime Date { get; set; }
     public string? Note { get; set; }
     public List<int> TagIds { get; set; } = [];
 }

@@ -1,0 +1,15 @@
+/* === Error.razor — /Error === */
+.page-error {
+    max-width: 640px;
+    padding: 2rem;
+}
+
+.page-error .ft-error-title {
+    color: var(--ft-color-expense);
+}
+
+.page-error code {
+    background: var(--ft-background);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}

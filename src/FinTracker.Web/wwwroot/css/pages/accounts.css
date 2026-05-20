@@ -1,0 +1,5 @@
+/* === Accounts.razor — /accounts === */
+.page-accounts .ft-balance-cell {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}

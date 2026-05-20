@@ -1,0 +1,14 @@
+/* === Budgets.razor — /budgets === */
+.page-budgets .ft-budget-card {
+    padding: 1rem;
+    border-radius: var(--ft-card-radius);
+}
+
+.page-budgets .ft-budget-card .mud-typography-subtitle1 {
+    font-weight: 600;
+}
+
+.page-budgets .ft-budget-remaining {
+    color: var(--ft-color-muted);
+    margin-top: 0.25rem;
+}

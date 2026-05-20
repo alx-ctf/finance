@@ -1,13 +1,15 @@
 using FinTracker.Application.DTOs;
 using FinTracker.Application.Interfaces;
 using FinTracker.Domain.Entities;
+using FluentValidation;
 
 namespace FinTracker.Application.Services;
 
 public class BudgetService(
     IBudgetRepository budgetRepository,
     ICategoryRepository categoryRepository,
-    ITransactionRepository transactionRepository) : IBudgetService
+    ITransactionRepository transactionRepository,
+    IValidator<CreateBudgetDto> validator) : IBudgetService
 {
     public async Task<IReadOnlyList<BudgetDto>> GetAllAsync(
         string userId,
@@ -34,6 +36,7 @@ public class BudgetService(
 
     public async Task<BudgetDto> CreateAsync(string userId, CreateBudgetDto dto, CancellationToken cancellationToken = default)
     {
+        await validator.ValidateAndThrowAsync(dto, cancellationToken);
         await EnsureCategoryExistsAsync(dto.CategoryId, userId, cancellationToken);
 
         var existing = await budgetRepository.GetByCategoryAndPeriodAsync(
@@ -63,6 +66,8 @@ public class BudgetService(
 
     public async Task<BudgetDto> UpdateAsync(int id, string userId, CreateBudgetDto dto, CancellationToken cancellationToken = default)
     {
+        await validator.ValidateAndThrowAsync(dto, cancellationToken);
+
         var budget = await budgetRepository.GetByIdAsync(id, userId, cancellationToken)
             ?? throw new InvalidOperationException("Budget not found.");
 

@@ -1,12 +1,14 @@
 using FinTracker.Application.DTOs;
 using FinTracker.Application.Interfaces;
 using FinTracker.Domain.Entities;
+using FluentValidation;
 
 namespace FinTracker.Application.Services;
 
 public class AccountService(
     IAccountRepository accountRepository,
-    ITransactionRepository transactionRepository) : IAccountService
+    ITransactionRepository transactionRepository,
+    IValidator<CreateAccountDto> validator) : IAccountService
 {
     public async Task<IReadOnlyList<AccountDto>> GetAllAsync(string userId, CancellationToken cancellationToken = default)
     {
@@ -22,6 +24,8 @@ public class AccountService(
 
     public async Task<AccountDto> CreateAsync(string userId, CreateAccountDto dto, CancellationToken cancellationToken = default)
     {
+        await validator.ValidateAndThrowAsync(dto, cancellationToken);
+
         var account = new Account
         {
             UserId = userId,
@@ -40,6 +44,8 @@ public class AccountService(
 
     public async Task<AccountDto> UpdateAsync(int id, string userId, CreateAccountDto dto, CancellationToken cancellationToken = default)
     {
+        await validator.ValidateAndThrowAsync(dto, cancellationToken);
+
         var account = await accountRepository.GetByIdAsync(id, userId, cancellationToken)
             ?? throw new InvalidOperationException("Account not found.");
 

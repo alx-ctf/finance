@@ -1,0 +1,8 @@
+/* === Transactions.razor — /transactions === */
+.page-transactions .ft-table-actions {
+    white-space: nowrap;
+}
+
+.page-transactions .ft-category-chip {
+    color: #fff;
+}

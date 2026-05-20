@@ -1,0 +1,9 @@
+/* === Tags.razor — /tags === */
+.page-tags .ft-tag-form {
+    margin-bottom: 1.5rem;
+}
+
+.page-tags .ft-tag-chip {
+    color: #fff;
+    margin: 4px;
+}

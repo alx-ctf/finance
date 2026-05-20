@@ -1,0 +1,8 @@
+/* === TransactionDialog.razor === */
+.dialog-transaction .mud-dialog-content {
+    min-width: 360px;
+}
+
+.dialog-transaction .mud-input {
+    margin-bottom: 0.75rem;
+}

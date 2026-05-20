@@ -1,0 +1,34 @@
+@inject ThemeService Theme
+@implements IDisposable
+
+<MudTooltip Text="Тема оформления">
+<MudMenu Icon="@CurrentIcon" Color="Color.Inherit" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight"
+         Dense="true" Class="ft-theme-toggle">
+    <MudMenuItem Icon="@Icons.Material.Filled.LightMode"
+                 OnClick="@(() => SetMode(ThemeMode.Light))"
+                 Label="Светлая" />
+    <MudMenuItem Icon="@Icons.Material.Filled.DarkMode"
+                 OnClick="@(() => SetMode(ThemeMode.Dark))"
+                 Label="Тёмная" />
+    <MudMenuItem Icon="@Icons.Material.Filled.SettingsBrightness"
+                 OnClick="@(() => SetMode(ThemeMode.System))"
+                 Label="Как в системе" />
+</MudMenu>
+</MudTooltip>
+
+@code {
+    private string CurrentIcon => Theme.Mode switch
+    {
+        ThemeMode.Dark => Icons.Material.Filled.DarkMode,
+        ThemeMode.Light => Icons.Material.Filled.LightMode,
+        _ => Icons.Material.Filled.SettingsBrightness
+    };
+
+    protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
+
+    private async Task SetMode(ThemeMode mode) => await Theme.SetModeAsync(mode);
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Theme.Changed -= OnThemeChanged;
+}

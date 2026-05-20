@@ -23,4 +23,19 @@ public class MonthlyTrendDto
     public string Label => $"{Month:00}.{Year}";
     public decimal Income { get; set; }
     public decimal Expense { get; set; }
+    public decimal Net => Income - Expense;
+}
+
+public class DailyExpenseDto
+{
+    public int Day { get; set; }
+    public string Label { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+}
+
+public class AccountExpenseDto
+{
+    public int AccountId { get; set; }
+    public string AccountName { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
 }

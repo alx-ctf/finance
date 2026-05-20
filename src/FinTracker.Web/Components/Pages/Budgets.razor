@@ -1,36 +1,39 @@
 @page "/budgets"
 @attribute [Authorize]
 @inject IBudgetService BudgetService
-@inject ICategoryService CategoryService
 @inject CurrentUserService CurrentUser
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
+<PageStyleLink Href="css/pages/budgets.css" />
 <PageTitle>Бюджеты</PageTitle>
 
-<MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h4">Бюджеты — @DateTime.Today.ToString("MMMM yyyy")</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreate">Добавить</MudButton>
-</MudStack>
+<div class="page-budgets ft-page">
+    <div class="ft-page-toolbar">
+        <MudText Typo="Typo.h4" Class="ft-page-title mb-0">Бюджеты — @_monthTitle</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreate">Добавить</MudButton>
+    </div>
 
-<MudGrid Spacing="3">
-    @foreach (var b in _items)
-    {
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4" Elevation="2">
-                <MudText Typo="Typo.subtitle1">@b.CategoryName</MudText>
-                <MudText Typo="Typo.body2">@b.SpentAmount.ToString("N0") / @b.LimitAmount.ToString("N0") ₽</MudText>
-                <MudProgressLinear Value="@b.UsagePercent" Max="100" Color="@GetColor(b.UsagePercent)" Class="mt-2" />
-                <MudText Typo="Typo.caption">Остаток: @b.Remaining.ToString("N0") ₽</MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                               Class="mt-2" OnClick="() => DeleteAsync(b.Id)" />
-            </MudPaper>
-        </MudItem>
-    }
-</MudGrid>
+    <MudGrid Spacing="3">
+        @foreach (var b in _items)
+        {
+            <MudItem xs="12" md="6">
+                <MudPaper Class="ft-budget-card ft-card" Elevation="2">
+                    <MudText Typo="Typo.subtitle1">@b.CategoryName</MudText>
+                    <MudText Typo="Typo.body2">@b.SpentAmount.ToString("N0") / @b.LimitAmount.ToString("N0") ₽</MudText>
+                    <MudProgressLinear Value="@b.UsagePercent" Max="100" Color="@GetColor(b.UsagePercent)" Class="mt-2" />
+                    <MudText Typo="Typo.caption" Class="ft-budget-remaining">Остаток: @b.Remaining.ToString("N0") ₽</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                   Class="mt-2" OnClick="() => DeleteAsync(b.Id)" />
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+</div>
 
 @code {
     private List<BudgetDto> _items = [];
+    private string _monthTitle = "";
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -38,7 +41,10 @@
     {
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;
-        _items = (await BudgetService.GetAllAsync(userId, DateTime.Today.Year, DateTime.Today.Month)).ToList();
+
+        var (year, month) = UtcDateHelper.CurrentYearMonthUtc();
+        _monthTitle = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc).ToString("MMMM yyyy");
+        _items = (await BudgetService.GetAllAsync(userId, year, month)).ToList();
     }
 
     private static Color GetColor(double percent) => percent switch
@@ -59,8 +65,16 @@
     {
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;
-        await BudgetService.DeleteAsync(id, userId);
-        Snackbar.Add("Бюджет удалён", Severity.Success);
-        await LoadAsync();
+
+        try
+        {
+            await BudgetService.DeleteAsync(id, userId);
+            Snackbar.Add("Бюджет удалён", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

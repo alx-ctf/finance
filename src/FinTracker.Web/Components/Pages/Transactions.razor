@@ -1,55 +1,55 @@
 @page "/transactions"
 @attribute [Authorize]
 @inject ITransactionService TransactionService
-@inject IAccountService AccountService
-@inject ICategoryService CategoryService
-@inject ITagService TagService
 @inject CurrentUserService CurrentUser
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
+<PageStyleLink Href="css/pages/transactions.css" />
 <PageTitle>Транзакции</PageTitle>
 
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-    <MudText Typo="Typo.h4">Транзакции</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-               OnClick="OpenCreateDialog">Добавить</MudButton>
-</MudStack>
+<div class="page-transactions ft-page">
+    <div class="ft-page-toolbar">
+        <MudText Typo="Typo.h4" Class="ft-page-title mb-0">Транзакции</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OpenCreateDialog">Добавить</MudButton>
+    </div>
 
-<MudTable Items="_items" Hover="true" Loading="_loading" Dense="true">
-    <HeaderContent>
-        <MudTh>Дата</MudTh>
-        <MudTh>Тип</MudTh>
-        <MudTh>Категория</MudTh>
-        <MudTh>Счёт</MudTh>
-        <MudTh Align="Align.End">Сумма</MudTh>
-        <MudTh>Теги</MudTh>
-        <MudTh></MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd>@context.Date.ToString("dd.MM.yyyy")</MudTd>
-        <MudTd>
-            <MudChip T="string" Size="Size.Small" Color="@(context.Type == TransactionType.Income ? Color.Success : Color.Error)">
-                @(context.Type == TransactionType.Income ? "Доход" : "Расход")
-            </MudChip>
-        </MudTd>
-        <MudTd>
-            <MudChip T="string" Size="Size.Small" Style="@($"background:{context.CategoryColor}")">@context.CategoryName</MudChip>
-        </MudTd>
-        <MudTd>@context.AccountName</MudTd>
-        <MudTd Align="Align.End">
-            <span style="color:@(context.Type == TransactionType.Income ? "green" : "red")">
-                @(context.Type == TransactionType.Income ? "+" : "-")@context.Amount.ToString("N2")
-            </span>
-        </MudTd>
-        <MudTd>@string.Join(", ", context.Tags)</MudTd>
-        <MudTd>
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => OpenEditDialog(context)" />
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
-                           OnClick="() => DeleteAsync(context.Id)" />
-        </MudTd>
-    </RowTemplate>
-</MudTable>
+    <MudTable Items="_items" Hover="true" Loading="_loading" Dense="true">
+        <HeaderContent>
+            <MudTh>Дата</MudTh>
+            <MudTh>Тип</MudTh>
+            <MudTh>Категория</MudTh>
+            <MudTh>Счёт</MudTh>
+            <MudTh Style="text-align:right">Сумма</MudTh>
+            <MudTh>Теги</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Date.ToString("dd.MM.yyyy")</MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@(context.Type == TransactionType.Income ? Color.Success : Color.Error)">
+                    @(context.Type == TransactionType.Income ? "Доход" : "Расход")
+                </MudChip>
+            </MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Class="ft-category-chip" Style="@($"background:{context.CategoryColor}")">@context.CategoryName</MudChip>
+            </MudTd>
+            <MudTd>@context.AccountName</MudTd>
+            <MudTd Style="text-align:right">
+                <span class="@(context.Type == TransactionType.Income ? "ft-amount-income" : "ft-amount-expense")">
+                    @(context.Type == TransactionType.Income ? "+" : "-")@context.Amount.ToString("N2")
+                </span>
+            </MudTd>
+            <MudTd>@string.Join(", ", context.Tags)</MudTd>
+            <MudTd Class="ft-table-actions">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => OpenEditDialog(context)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                               OnClick="() => DeleteAsync(context.Id)" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</div>
 
 @code {
     private List<TransactionDto> _items = [];
@@ -87,7 +87,8 @@
                     Amount = item.Amount,
                     Type = item.Type,
                     Date = item.Date,
-                    Note = item.Note
+                    Note = item.Note,
+                    TagIds = item.TagIds
                 }
             }
         };
@@ -100,8 +101,16 @@
     {
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;
-        await TransactionService.DeleteAsync(id, userId);
-        Snackbar.Add("Транзакция удалена", Severity.Success);
-        await LoadAsync();
+
+        try
+        {
+            await TransactionService.DeleteAsync(id, userId);
+            Snackbar.Add("Транзакция удалена", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

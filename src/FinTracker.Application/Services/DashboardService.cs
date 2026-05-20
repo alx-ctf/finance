@@ -73,4 +73,44 @@ public class DashboardService(
             .ThenBy(x => x.Month)
             .ToList();
     }
+
+    public async Task<IReadOnlyList<DailyExpenseDto>> GetDailyExpensesAsync(
+        string userId,
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken cancellationToken = default)
+    {
+        var aggregates = await transactionRepository.GetDailyExpensesAsync(
+            userId, from, to, cancellationToken);
+
+        return aggregates
+            .Select(a => new DailyExpenseDto
+            {
+                Day = a.Day,
+                Label = a.Day.ToString(),
+                Amount = a.Amount
+            })
+            .OrderBy(x => x.Day)
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<AccountExpenseDto>> GetExpensesByAccountAsync(
+        string userId,
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken cancellationToken = default)
+    {
+        var aggregates = await transactionRepository.GetExpensesByAccountAsync(
+            userId, from, to, cancellationToken);
+
+        return aggregates
+            .Select(a => new AccountExpenseDto
+            {
+                AccountId = a.AccountId,
+                AccountName = a.AccountName,
+                Amount = a.Amount
+            })
+            .OrderByDescending(x => x.Amount)
+            .ToList();
+    }
 }

@@ -1,0 +1,69 @@
+/* === Общие стили сайта === */
+html, body {
+    margin: 0;
+    font-family: var(--ft-font);
+    background-color: var(--ft-background);
+    color: var(--ft-color-text);
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+/* Общие классы для всех страниц */
+.ft-page {
+    padding: var(--ft-page-padding);
+}
+
+.ft-page-title {
+    margin-bottom: 1rem;
+}
+
+.ft-page-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.ft-card {
+    border-radius: var(--ft-card-radius);
+    box-shadow: var(--ft-card-shadow);
+    border: var(--ft-card-border);
+}
+
+.ft-page-title {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ft-color-text);
+}
+
+::selection {
+    background: rgba(13, 148, 136, 0.25);
+    color: var(--ft-color-text);
+}
+
+.ft-amount-income {
+    color: var(--ft-color-income);
+    font-weight: 500;
+}
+
+.ft-amount-expense {
+    color: var(--ft-color-expense);
+    font-weight: 500;
+}

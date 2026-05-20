@@ -1,0 +1,24 @@
+@inject ThemeService Theme
+@implements IDisposable
+
+<MudThemeProvider IsDarkMode="Theme.IsDarkMode" IsDarkModeChanged="OnDarkModeChanged" Theme="FinTrackerMudTheme.Default" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@code {
+    private Task OnDarkModeChanged(bool isDark) =>
+        Theme.SetModeAsync(isDark ? ThemeMode.Dark : ThemeMode.Light);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await Theme.InitializeAsync();
+    }
+
+    protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Theme.Changed -= OnThemeChanged;
+}

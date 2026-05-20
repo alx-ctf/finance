@@ -1,0 +1,4 @@
+/* === AccountDialog.razor === */
+.dialog-account .mud-dialog-content {
+    min-width: 320px;
+}

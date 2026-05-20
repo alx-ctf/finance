@@ -22,6 +22,14 @@
 
 Связи в БД: **1:1** UserProfile↔User, **1:N** Account/Transaction/Budget, **N:N** Transaction↔Tag, Category↔Tag.
 
+## Стили (CSS)
+
+Все стили в `src/FinTracker.Web/wwwroot/css/` — см. [css/README.md](src/FinTracker.Web/wwwroot/css/README.md).
+
+- Глобальная тема: `00-variables.css`
+- Каждая страница: `css/pages/<имя>.css`
+- Диалоги: `css/dialogs/<имя>.css`
+
 ## Быстрый старт (Docker)
 
 ```bash

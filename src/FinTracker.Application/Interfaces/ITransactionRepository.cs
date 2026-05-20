@@ -33,6 +33,16 @@ public interface ITransactionRepository
         string userId,
         int monthCount,
         CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<DailyExpenseAggregate>> GetDailyExpensesAsync(
+        string userId,
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<AccountExpenseAggregate>> GetExpensesByAccountAsync(
+        string userId,
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken cancellationToken = default);
     Task<Transaction> AddAsync(Transaction transaction, CancellationToken cancellationToken = default);
     Task UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default);
     Task DeleteAsync(Transaction transaction, CancellationToken cancellationToken = default);
@@ -54,4 +64,17 @@ public sealed class MonthlyTrendAggregate
     public int Month { get; init; }
     public decimal Income { get; init; }
     public decimal Expense { get; init; }
+}
+
+public sealed class DailyExpenseAggregate
+{
+    public int Day { get; init; }
+    public decimal Amount { get; init; }
+}
+
+public sealed class AccountExpenseAggregate
+{
+    public int AccountId { get; init; }
+    public string AccountName { get; init; } = string.Empty;
+    public decimal Amount { get; init; }
 }

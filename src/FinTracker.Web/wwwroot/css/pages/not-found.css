@@ -1,0 +1,14 @@
+/* === NotFound.razor — /not-found === */
+.page-not-found {
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.page-not-found h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.page-not-found p {
+    color: var(--ft-color-muted);
+}

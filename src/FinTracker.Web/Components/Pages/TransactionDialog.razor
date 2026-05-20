@@ -5,7 +5,9 @@
 @inject CurrentUserService CurrentUser
 @inject ISnackbar Snackbar
 
-<MudDialog>
+<PageStyleLink Href="css/dialogs/transaction.css" />
+
+<MudDialog Class="dialog-transaction">
     <DialogContent>
         <MudForm @ref="_form" @bind-IsValid="_valid">
             <MudSelect T="TransactionType" Value="_model.Type" ValueChanged="OnTypeChanged" Label="Тип" Required="true" Class="mb-3">
@@ -51,7 +53,7 @@
     private MudForm? _form;
     private bool _valid;
     private CreateTransactionDto _model = new();
-    private DateTime? _date = DateTime.Today;
+    private DateTime? _date = UtcDateHelper.TodayUtc();
     private List<AccountDto> _accounts = [];
     private List<CategoryDto> _categories = [];
     private List<TagDto> _tags = [];
@@ -83,7 +85,7 @@
         await _form!.ValidateAsync();
         if (!_valid) return;
 
-        _model.Date = _date ?? DateTime.Today;
+        _model.Date = UtcDateHelper.ToUtcDate(_date ?? UtcDateHelper.TodayUtc());
         _model.TagIds = _selectedTags.ToList();
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;

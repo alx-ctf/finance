@@ -5,33 +5,36 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
+<PageStyleLink Href="css/pages/accounts.css" />
 <PageTitle>Счета</PageTitle>
 
-<MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h4">Счета</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-               OnClick="OpenCreate">Добавить</MudButton>
-</MudStack>
+<div class="page-accounts ft-page">
+    <div class="ft-page-toolbar">
+        <MudText Typo="Typo.h4" Class="ft-page-title mb-0">Счета</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OpenCreate">Добавить</MudButton>
+    </div>
 
-<MudTable Items="_items" Hover="true" Loading="_loading">
-    <HeaderContent>
-        <MudTh>Название</MudTh>
-        <MudTh>Тип</MudTh>
-        <MudTh Align="Align.End">Баланс</MudTh>
-        <MudTh>Статус</MudTh>
-        <MudTh></MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd>@context.Name</MudTd>
-        <MudTd>@context.Type</MudTd>
-        <MudTd Align="Align.End">@context.Balance.ToString("N2") @context.Currency</MudTd>
-        <MudTd>@(context.IsActive ? "Активен" : "Закрыт")</MudTd>
-        <MudTd>
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                           OnClick="() => DeleteAsync(context.Id)" />
-        </MudTd>
-    </RowTemplate>
-</MudTable>
+    <MudTable Items="_items" Hover="true" Loading="_loading">
+        <HeaderContent>
+            <MudTh>Название</MudTh>
+            <MudTh>Тип</MudTh>
+            <MudTh Style="text-align:right">Баланс</MudTh>
+            <MudTh>Статус</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Type</MudTd>
+            <MudTd Class="ft-balance-cell">@context.Balance.ToString("N2") @context.Currency</MudTd>
+            <MudTd>@(context.IsActive ? "Активен" : "Закрыт")</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                               OnClick="() => DeleteAsync(context.Id)" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</div>
 
 @code {
     private List<AccountDto> _items = [];
@@ -50,8 +53,7 @@
 
     private async Task OpenCreate()
     {
-        var parameters = new DialogParameters<AccountDialog>();
-        var result = await DialogService.ShowAsync<AccountDialog>("Новый счёт", parameters);
+        var result = await DialogService.ShowAsync<AccountDialog>("Новый счёт");
         if ((await result.Result)?.Canceled == false)
             await LoadAsync();
     }
@@ -60,8 +62,16 @@
     {
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;
-        await AccountService.DeleteAsync(id, userId);
-        Snackbar.Add("Счёт удалён", Severity.Success);
-        await LoadAsync();
+
+        try
+        {
+            await AccountService.DeleteAsync(id, userId);
+            Snackbar.Add("Счёт удалён", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

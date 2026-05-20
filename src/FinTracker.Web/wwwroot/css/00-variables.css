@@ -1,0 +1,106 @@
+/* === Дизайн-система FinTracker === */
+:root,
+[data-theme="light"] {
+    --ft-font: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    /* Акцент — бирюза / циан вместо фиолетового */
+    --ft-color-primary: #0d9488;
+    --ft-color-primary-light: #14b8a6;
+    --ft-color-accent: #06b6d4;
+    --ft-color-income: #059669;
+    --ft-color-expense: #e11d48;
+    --ft-color-muted: #64748b;
+
+    --ft-color-text: #0f172a;
+    --ft-color-text-secondary: #475569;
+    --ft-color-border: #e2e8f0;
+
+    --ft-surface: #ffffff;
+    --ft-surface-elevated: #f8fafc;
+    --ft-background: #f1f5f9;
+    --ft-auth-gradient: linear-gradient(145deg, #ecfeff 0%, #f0fdfa 40%, #f1f5f9 100%);
+
+    --ft-input-bg: #f8fafc;
+    --ft-error-bg: #fff1f2;
+    --ft-hint-bg: #ecfeff;
+    --ft-hint-text: #0e7490;
+
+    /* Неон и свечение */
+    --ft-neon-primary: #2dd4bf;
+    --ft-neon-income: #34d399;
+    --ft-neon-expense: #fb7185;
+    --ft-glow-primary: 0 0 20px rgba(45, 212, 191, 0.35);
+    --ft-glow-income: 0 0 16px rgba(52, 211, 153, 0.4);
+    --ft-glow-expense: 0 0 16px rgba(251, 113, 133, 0.4);
+
+    /* Верхняя панель */
+    --ft-appbar-bg: linear-gradient(90deg, #0f766e 0%, #0d9488 45%, #0891b2 100%);
+    --ft-appbar-text: #f0fdfa;
+    --ft-appbar-border: rgba(45, 212, 191, 0.5);
+
+    --ft-drawer-bg: #ffffff;
+    --ft-drawer-border: #e2e8f0;
+
+    --ft-radius-sm: 8px;
+    --ft-radius-md: 14px;
+    --ft-radius-lg: 18px;
+    --ft-radius-xl: 24px;
+
+    --ft-page-padding: 1rem;
+    --ft-card-radius: var(--ft-radius-lg);
+    --ft-card-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+    --ft-card-border: 1px solid rgba(148, 163, 184, 0.25);
+
+    --ft-chart-income: #10b981;
+    --ft-chart-income-glow: #34d399;
+    --ft-chart-expense: #f43f5e;
+    --ft-chart-expense-glow: #fb7185;
+
+    --ft-auth-width: 400px;
+    --ft-auth-top-margin: 80px;
+}
+
+[data-theme="dark"] {
+    --ft-color-primary: #2dd4bf;
+    --ft-color-primary-light: #5eead4;
+    --ft-color-accent: #22d3ee;
+    --ft-color-income: #4ade80;
+    --ft-color-expense: #fb7185;
+    --ft-color-muted: #94a3b8;
+
+    --ft-color-text: #e2e8f0;
+    --ft-color-text-secondary: #94a3b8;
+    --ft-color-border: #334155;
+
+    --ft-surface: #1e293b;
+    --ft-surface-elevated: #253347;
+    --ft-background: #0b1220;
+    --ft-auth-gradient: linear-gradient(145deg, #0b1220 0%, #0f172a 50%, #042f2e 100%);
+
+    --ft-input-bg: #1e293b;
+    --ft-error-bg: #4c0519;
+    --ft-hint-bg: #164e63;
+    --ft-hint-text: #67e8f9;
+
+    --ft-neon-primary: #5eead4;
+    --ft-neon-income: #4ade80;
+    --ft-neon-expense: #fda4af;
+    --ft-glow-primary: 0 0 24px rgba(94, 234, 212, 0.25);
+    --ft-glow-income: 0 0 20px rgba(74, 222, 128, 0.3);
+    --ft-glow-expense: 0 0 20px rgba(251, 113, 133, 0.3);
+
+    --ft-appbar-bg: linear-gradient(90deg, #042f2e 0%, #0f766e 40%, #155e75 100%);
+    --ft-appbar-text: #ccfbf1;
+    --ft-appbar-border: rgba(94, 234, 212, 0.35);
+
+    --ft-drawer-bg: #111827;
+    --ft-drawer-border: #1e293b;
+
+    --ft-card-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    --ft-card-border: 1px solid rgba(148, 163, 184, 0.12);
+
+    --ft-chart-income: #4ade80;
+    --ft-chart-income-glow: #86efac;
+    --ft-chart-expense: #fb7185;
+    --ft-chart-expense-glow: #fda4af;
+}

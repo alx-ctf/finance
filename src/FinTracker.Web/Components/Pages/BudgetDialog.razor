@@ -3,7 +3,9 @@
 @inject CurrentUserService CurrentUser
 @inject ISnackbar Snackbar
 
-<MudDialog>
+<PageStyleLink Href="css/dialogs/budget.css" />
+
+<MudDialog Class="dialog-budget">
     <DialogContent>
         <MudSelect T="int" @bind-Value="_model.CategoryId" Label="Категория расходов" Class="mb-3">
             @foreach (var c in _categories)
@@ -23,15 +25,15 @@
 
 @code {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
-    private CreateBudgetDto _model = new()
-    {
-        Year = DateTime.Today.Year,
-        Month = DateTime.Today.Month
-    };
+    private CreateBudgetDto _model = new();
     private List<CategoryDto> _categories = [];
 
     protected override async Task OnInitializedAsync()
     {
+        var (year, month) = UtcDateHelper.CurrentYearMonthUtc();
+        _model.Year = year;
+        _model.Month = month;
+
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;
         _categories = (await CategoryService.GetAllAsync(userId, TransactionType.Expense)).ToList();

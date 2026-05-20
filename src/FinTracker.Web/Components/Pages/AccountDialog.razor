@@ -2,7 +2,9 @@
 @inject CurrentUserService CurrentUser
 @inject ISnackbar Snackbar
 
-<MudDialog>
+<PageStyleLink Href="css/dialogs/account.css" />
+
+<MudDialog Class="dialog-account">
     <DialogContent>
         <MudTextField @bind-Value="_model.Name" Label="Название" Required="true" Class="mb-3" />
         <MudSelect T="AccountType" @bind-Value="_model.Type" Label="Тип" Class="mb-3">

@@ -11,7 +11,9 @@ public class BudgetDto
     public int Year { get; set; }
     public int Month { get; set; }
     public decimal Remaining => LimitAmount - SpentAmount;
-    public double UsagePercent => LimitAmount > 0 ? (double)(SpentAmount / LimitAmount * 100) : 0;
+    public double UsagePercent => LimitAmount > 0
+        ? Math.Min(100, (double)(SpentAmount / LimitAmount * 100))
+        : 0;
 }
 
 public class CreateBudgetDto

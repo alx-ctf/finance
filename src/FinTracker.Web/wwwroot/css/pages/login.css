@@ -1,0 +1,64 @@
+/* === Login.razor — /login === */
+.page-login {
+    display: flex;
+    justify-content: center;
+    padding-top: var(--ft-auth-top-margin);
+}
+
+.page-login .ft-auth-card {
+    width: 100%;
+    max-width: var(--ft-auth-width);
+    padding: 1.5rem;
+}
+
+.page-login .ft-auth-link {
+    display: block;
+    margin-top: 0.75rem;
+}
+
+.page-login .ft-demo-hint {
+    margin-top: 0.75rem;
+}
+
+.ft-auth-form .ft-field {
+    margin-bottom: 1rem;
+}
+
+.ft-auth-form label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--ft-color-muted);
+}
+
+.ft-auth-form input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.ft-btn-primary {
+    width: 100%;
+    padding: 0.65rem;
+    background: var(--ft-color-primary);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+.ft-btn-primary:hover {
+    filter: brightness(1.05);
+}
+
+.ft-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--ft-color-muted);
+    margin-top: 0.25rem;
+}

@@ -1,41 +1,52 @@
 @page "/register"
-@inject UserManager<ApplicationUser> UserManager
-@inject SignInManager<ApplicationUser> SignInManager
-@inject NavigationManager Navigation
-@inject ISnackbar Snackbar
+@layout AuthLayout
+@attribute [AllowAnonymous]
 
 <PageTitle>Регистрация</PageTitle>
 
-<MudPaper Class="pa-6 ma-auto" Style="max-width:400px;margin-top:80px" Elevation="3">
-    <MudText Typo="Typo.h5" Class="mb-4">Регистрация</MudText>
-    <MudTextField @bind-Value="_email" Label="Email" Class="mb-3" />
-    <MudTextField @bind-Value="_displayName" Label="Имя" Class="mb-3" />
-    <MudTextField @bind-Value="_password" Label="Пароль" InputType="InputType.Password" Class="mb-4" />
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="RegisterAsync">Создать аккаунт</MudButton>
-    <MudLink Href="/login" Class="mt-3 d-block">Уже есть аккаунт?</MudLink>
-</MudPaper>
+<div class="page-register">
+    <div class="ft-auth-card">
+        <h1 class="ft-auth-title">Регистрация</h1>
 
-@code {
-    private string _email = "";
-    private string _displayName = "";
-    private string _password = "";
-
-    private async Task RegisterAsync()
-    {
-        var user = new ApplicationUser
+        @if (!string.IsNullOrEmpty(_error))
         {
-            UserName = _email,
-            Email = _email,
-            EmailConfirmed = true
-        };
-        var result = await UserManager.CreateAsync(user, _password);
-        if (!result.Succeeded)
-        {
-            Snackbar.Add(string.Join("; ", result.Errors.Select(e => e.Description)), Severity.Error);
-            return;
+            <div class="ft-auth-error" role="alert">@_error</div>
         }
 
-        await SignInManager.SignInAsync(user, isPersistent: true);
-        Navigation.NavigateTo("/", forceLoad: true);
+        <form method="post" action="/auth/register" class="ft-auth-form">
+            <AntiforgeryToken />
+            <div class="ft-field">
+                <label for="email">Email</label>
+                <input id="email" type="email" name="Email" required autocomplete="username" placeholder="you@example.com" />
+            </div>
+            <div class="ft-field">
+                <label for="password">Пароль</label>
+                <input id="password" type="password" name="Password" required autocomplete="new-password"
+                       minlength="6" placeholder="••••••••" />
+                <span class="ft-hint">Мин. 6 символов, цифра, заглавная и строчная буква</span>
+            </div>
+            <button type="submit" class="ft-btn-primary">Создать аккаунт</button>
+        </form>
+
+        <div class="ft-auth-link-wrap">
+            <a href="/login" class="ft-auth-link">Уже есть аккаунт?</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? ErrorCode { get; set; }
+
+    private string? _error;
+
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrWhiteSpace(ErrorCode))
+            return;
+
+        _error = ErrorCode == "empty"
+            ? "Заполните email и пароль"
+            : Uri.UnescapeDataString(ErrorCode);
     }
 }

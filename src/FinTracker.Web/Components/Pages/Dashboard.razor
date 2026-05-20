@@ -1,111 +1,354 @@
 @page "/"
 @attribute [Authorize]
 @inject IDashboardService DashboardService
+@inject IBudgetService BudgetService
 @inject CurrentUserService CurrentUser
+@inject IJSRuntime JS
+@inject ThemeService ThemeService
+@implements IAsyncDisposable
 
+<PageStyleLink Href="css/pages/dashboard.css" />
 <PageTitle>Дашборд</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Дашборд</MudText>
+<div class="page-dashboard ft-page">
+    <MudText Typo="Typo.h4" Class="ft-page-title">Дашборд</MudText>
 
-@if (_loading)
-{
-    <MudProgressLinear Indeterminate="true" />
-}
-else if (_summary is not null)
-{
-    <MudGrid Spacing="3" Class="mb-4">
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Class="pa-4" Elevation="2">
-                <MudText Typo="Typo.subtitle2">Баланс счетов</MudText>
-                <MudText Typo="Typo.h5" Color="Color.Primary">@_summary.Balance.ToString("N2") ₽</MudText>
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Class="pa-4" Elevation="2">
-                <MudText Typo="Typo.subtitle2">Доходы (месяц)</MudText>
-                <MudText Typo="Typo.h5" Color="Color.Success">+@_summary.TotalIncome.ToString("N2") ₽</MudText>
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Class="pa-4" Elevation="2">
-                <MudText Typo="Typo.subtitle2">Расходы (месяц)</MudText>
-                <MudText Typo="Typo.h5" Color="Color.Error">-@_summary.TotalExpense.ToString("N2") ₽</MudText>
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Class="pa-4" Elevation="2">
-                <MudText Typo="Typo.subtitle2">Чистый поток</MudText>
-                <MudText Typo="Typo.h5">@_summary.NetIncome.ToString("N2") ₽</MudText>
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (_summary is not null)
+    {
+        <MudGrid Spacing="3" Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="ft-summary-card ft-card" Elevation="2">
+                    <MudText Typo="Typo.subtitle2">Баланс счетов</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary">@_summary.Balance.ToString("N2") ₽</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="ft-summary-card ft-card" Elevation="2">
+                    <MudText Typo="Typo.subtitle2">Доходы (месяц)</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Success">+@_summary.TotalIncome.ToString("N2") ₽</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="ft-summary-card ft-card" Elevation="2">
+                    <MudText Typo="Typo.subtitle2">Расходы (месяц)</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Error">-@_summary.TotalExpense.ToString("N2") ₽</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="ft-summary-card ft-card" Elevation="2">
+                    <MudText Typo="Typo.subtitle2">Чистый поток</MudText>
+                    <MudText Typo="Typo.h5" Color="@(_summary.NetIncome >= 0 ? Color.Success : Color.Error)">
+                        @_summary.NetIncome.ToString("N2") ₽
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
 
-    <MudGrid Spacing="3">
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4" Elevation="2">
-                <MudText Typo="Typo.h6" Class="mb-3">Расходы по категориям</MudText>
-                @if (_byCategory.Count > 0)
-                {
-                    <MudChart T="double" ChartType="ChartType.Donut" InputData="@_chartData" InputLabels="@_chartLabels"
-                              Width="100%" Height="280px" ChartOptions="@_donutOptions" />
-                }
-                else
-                {
-                    <MudText>Нет данных за текущий месяц</MudText>
-                }
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4" Elevation="2">
-                <MudText Typo="Typo.h6" Class="mb-3">Динамика за 6 месяцев</MudText>
-                @if (_trend.Count > 0)
-                {
-                    <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_lineSeries"
-                              XAxisLabels="@_trendLabels" Width="100%" Height="280px"
-                              ChartOptions="@_lineOptions" />
-                }
-                else
-                {
-                    <MudText>Нет данных</MudText>
-                }
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
-}
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6" lg="4">
+                <MudPaper Class="ft-chart-panel ft-card pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-1">Расходы по категориям</MudText>
+                    <MudText Typo="Typo.caption" Class="ft-chart-caption mb-3">Доля трат за текущий месяц</MudText>
+                    @if (_byCategory.Count > 0)
+                    {
+                        <div class="ft-chart-canvas-wrap">
+                            <canvas id="chart-categories"></canvas>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Class="ft-chart-empty">Нет расходов за текущий месяц</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6" lg="4">
+                <MudPaper Class="ft-chart-panel ft-chart-panel--compare ft-card pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-1">Доходы и расходы</MudText>
+                    <MudText Typo="Typo.caption" Class="ft-chart-caption mb-2">Сравнение за текущий месяц</MudText>
+                    @if (_summary.TotalIncome > 0 || _summary.TotalExpense > 0)
+                    {
+                        <div class="ft-chart-legend-row">
+                            <span class="ft-chart-legend-item">
+                                <span class="ft-chart-legend-dot ft-chart-legend-dot--income"></span>
+                                Доходы
+                            </span>
+                            <span class="ft-chart-legend-item">
+                                <span class="ft-chart-legend-dot ft-chart-legend-dot--expense"></span>
+                                Расходы
+                            </span>
+                        </div>
+                        <div class="ft-chart-canvas-wrap">
+                            <canvas id="chart-income-expense"></canvas>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Class="ft-chart-empty">Нет операций за месяц</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6" lg="4">
+                <MudPaper Class="ft-chart-panel ft-card pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-1">Расходы по счетам</MudText>
+                    <MudText Typo="Typo.caption" Class="ft-chart-caption mb-3">С каких счетов ушли деньги</MudText>
+                    @if (_byAccount.Count > 0)
+                    {
+                        <div class="ft-chart-canvas-wrap">
+                            <canvas id="chart-accounts"></canvas>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Class="ft-chart-empty">Нет расходов за текущий месяц</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Class="ft-chart-panel ft-card pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-1">Динамика за 6 месяцев</MudText>
+                    <MudText Typo="Typo.caption" Class="ft-chart-caption mb-2">Доходы и расходы по месяцам</MudText>
+                    @if (_trend.Count > 0)
+                    {
+                        <div class="ft-chart-legend-row">
+                            <span class="ft-chart-legend-item">
+                                <span class="ft-chart-legend-dot ft-chart-legend-dot--income"></span>
+                                Доходы
+                            </span>
+                            <span class="ft-chart-legend-item">
+                                <span class="ft-chart-legend-dot ft-chart-legend-dot--expense"></span>
+                                Расходы
+                            </span>
+                        </div>
+                        <div class="ft-chart-canvas-wrap">
+                            <canvas id="chart-trend"></canvas>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Class="ft-chart-empty">Нет данных</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Class="ft-chart-panel ft-card pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-1">Чистый результат</MudText>
+                    <MudText Typo="Typo.caption" Class="ft-chart-caption mb-3">Доходы минус расходы за 6 месяцев</MudText>
+                    @if (_trend.Any(t => t.Net != 0))
+                    {
+                        <div class="ft-chart-canvas-wrap">
+                            <canvas id="chart-net"></canvas>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Class="ft-chart-empty">Нет данных</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Class="ft-chart-panel ft-card pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-1">Бюджеты</MudText>
+                    <MudText Typo="Typo.caption" Class="ft-chart-caption mb-3">Факт расходов и лимит по категориям</MudText>
+                    @if (_budgets.Count > 0)
+                    {
+                        <div class="ft-chart-canvas-wrap">
+                            <canvas id="chart-budgets"></canvas>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Class="ft-chart-empty">Бюджеты на этот месяц не заданы</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudPaper Class="ft-chart-panel ft-chart-panel-wide ft-card pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-1">Расходы по дням</MudText>
+                    <MudText Typo="Typo.caption" Class="ft-chart-caption mb-3">Ежедневные траты в текущем месяце</MudText>
+                    @if (_daily.Any(d => d.Amount > 0))
+                    {
+                        <div class="ft-chart-canvas-wrap ft-chart-canvas-wrap-wide">
+                            <canvas id="chart-daily"></canvas>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Class="ft-chart-empty">Нет расходов за текущий месяц</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</div>
 
 @code {
     private bool _loading = true;
+    private bool _chartsDrawn;
     private DashboardSummaryDto? _summary;
     private List<CategoryExpenseDto> _byCategory = [];
+    private List<AccountExpenseDto> _byAccount = [];
+    private List<DailyExpenseDto> _daily = [];
     private List<MonthlyTrendDto> _trend = [];
-    private double[] _chartData = [];
-    private string[] _chartLabels = [];
-    private string[] _trendLabels = [];
-    private List<ChartSeries<double>> _lineSeries = [];
-    private readonly ChartOptions _donutOptions = new() { ShowLegend = true };
-    private readonly ChartOptions _lineOptions = new() { ShowLegend = true };
+    private List<BudgetDto> _budgets = [];
+    private IJSObjectReference? _chartsModule;
 
     protected override async Task OnInitializedAsync()
     {
-        var userId = await CurrentUser.GetUserIdAsync();
-        if (userId is null) return;
+        ThemeService.Changed += OnThemeChanged;
 
-        var from = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-        var to = from.AddMonths(1).AddDays(-1);
+        try
+        {
+            var userId = await CurrentUser.GetUserIdAsync();
+            if (userId is null) return;
 
-        _summary = await DashboardService.GetSummaryAsync(userId, from, to);
-        _byCategory = (await DashboardService.GetExpensesByCategoryAsync(userId, from, to)).ToList();
-        _trend = (await DashboardService.GetMonthlyTrendAsync(userId, 6)).ToList();
+            var (from, to) = UtcDateHelper.CurrentMonthRangeUtc();
+            var (year, month) = UtcDateHelper.CurrentYearMonthUtc();
 
-        _chartData = _byCategory.Select(c => (double)c.Amount).ToArray();
-        _chartLabels = _byCategory.Select(c => c.CategoryName).ToArray();
-        _trendLabels = _trend.Select(t => t.Label).ToArray();
-        _lineSeries =
-        [
-            new ChartSeries<double> { Name = "Доходы", Data = _trend.Select(t => (double)t.Income).ToArray() },
-            new ChartSeries<double> { Name = "Расходы", Data = _trend.Select(t => (double)t.Expense).ToArray() }
-        ];
+            _summary = await DashboardService.GetSummaryAsync(userId, from, to);
+            _byCategory = (await DashboardService.GetExpensesByCategoryAsync(userId, from, to)).ToList();
+            _byAccount = (await DashboardService.GetExpensesByAccountAsync(userId, from, to)).ToList();
+            _daily = (await DashboardService.GetDailyExpensesAsync(userId, from, to)).ToList();
+            _trend = (await DashboardService.GetMonthlyTrendAsync(userId, 6)).ToList();
+            _budgets = (await BudgetService.GetAllAsync(userId, year, month)).ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 
-        _loading = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_loading || _summary is null || _chartsDrawn)
+            return;
+
+        await DrawChartsAsync();
+        _chartsDrawn = true;
+    }
+
+    private async Task DrawChartsAsync()
+    {
+        _chartsModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/dashboard-charts.js");
+
+        if (_byCategory.Count > 0)
+        {
+            await _chartsModule.InvokeVoidAsync(
+                "renderDonut",
+                "chart-categories",
+                _byCategory.Select(c => c.CategoryName).ToArray(),
+                _byCategory.Select(c => (double)c.Amount).ToArray());
+        }
+
+        if (_summary!.TotalIncome > 0 || _summary.TotalExpense > 0)
+        {
+            await _chartsModule.InvokeVoidAsync(
+                "renderIncomeExpenseCompare",
+                "chart-income-expense",
+                (double)_summary.TotalIncome,
+                (double)_summary.TotalExpense);
+        }
+
+        if (_byAccount.Count > 0)
+        {
+            await _chartsModule.InvokeVoidAsync(
+                "renderBar",
+                "chart-accounts",
+                _byAccount.Select(a => a.AccountName).ToArray(),
+                new[] { new { label = "Расходы", values = _byAccount.Select(a => (double)a.Amount).ToArray() } },
+                false);
+        }
+
+        if (_trend.Count > 0)
+        {
+            var labels = _trend.Select(t => t.Label).ToArray();
+            await _chartsModule.InvokeVoidAsync(
+                "renderLine",
+                "chart-trend",
+                labels,
+                new[]
+                {
+                    new { label = "Доходы", values = _trend.Select(t => (double)t.Income).ToArray() },
+                    new { label = "Расходы", values = _trend.Select(t => (double)t.Expense).ToArray() }
+                });
+
+            if (_trend.Any(t => t.Net != 0))
+            {
+                await _chartsModule.InvokeVoidAsync(
+                    "renderLine",
+                    "chart-net",
+                    labels,
+                    new[] { new { label = "Чистый результат", values = _trend.Select(t => (double)t.Net).ToArray() } });
+            }
+        }
+
+        if (_budgets.Count > 0)
+        {
+            await _chartsModule.InvokeVoidAsync(
+                "renderBar",
+                "chart-budgets",
+                _budgets.Select(b => b.CategoryName).ToArray(),
+                new[]
+                {
+                    new { label = "Потрачено", values = _budgets.Select(b => (double)b.SpentAmount).ToArray() },
+                    new { label = "Лимит", values = _budgets.Select(b => (double)b.LimitAmount).ToArray() }
+                },
+                false);
+        }
+
+        if (_daily.Any(d => d.Amount > 0))
+        {
+            var daysWithData = _daily.Where(d => d.Amount > 0).ToList();
+            await _chartsModule.InvokeVoidAsync(
+                "renderBar",
+                "chart-daily",
+                daysWithData.Select(d => d.Label).ToArray(),
+                new[] { new { label = "Расходы", values = daysWithData.Select(d => (double)d.Amount).ToArray() } },
+                false);
+        }
+    }
+
+    private void OnThemeChanged()
+    {
+        _chartsDrawn = false;
+        _ = InvokeAsync(async () =>
+        {
+            try
+            {
+                if (_chartsModule is not null)
+                    await _chartsModule.InvokeVoidAsync("disposeAll");
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+
+            StateHasChanged();
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        ThemeService.Changed -= OnThemeChanged;
+
+        if (_chartsModule is not null)
+        {
+            try
+            {
+                await _chartsModule.InvokeVoidAsync("disposeAll");
+                await _chartsModule.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
     }
 }

@@ -1,0 +1,9 @@
+/* === Categories.razor — /categories === */
+.page-categories .ft-category-chip {
+    color: #fff;
+    font-weight: 500;
+}
+
+.page-categories .mud-tabs-panel-content {
+    padding-top: 1rem;
+}

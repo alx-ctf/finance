@@ -5,37 +5,52 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
+<PageStyleLink Href="css/pages/categories.css" />
 <PageTitle>Категории</PageTitle>
 
-<MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h4">Категории</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreate">Добавить</MudButton>
-</MudStack>
+<div class="page-categories ft-page">
+    <div class="ft-page-toolbar">
+        <MudText Typo="Typo.h4" Class="ft-page-title mb-0">Категории</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreate">Добавить</MudButton>
+    </div>
 
-<MudTabs>
-    <MudTabPanel Text="Расходы">
-        <MudTable Items="_expenses" Dense="true" Hover="true">
-            <RowTemplate>
-                <MudTd><MudChip T="string" Style="@($"background:{context.Color}")">@context.Name</MudChip></MudTd>
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                                   OnClick="() => DeleteAsync(context.Id)" />
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
-    </MudTabPanel>
-    <MudTabPanel Text="Доходы">
-        <MudTable Items="_incomes" Dense="true" Hover="true">
-            <RowTemplate>
-                <MudTd><MudChip T="string" Style="@($"background:{context.Color}")">@context.Name</MudChip></MudTd>
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                                   OnClick="() => DeleteAsync(context.Id)" />
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
-    </MudTabPanel>
-</MudTabs>
+    <MudTabs>
+        <MudTabPanel Text="Расходы">
+            <MudTable Items="_expenses" Dense="true" Hover="true">
+                <HeaderContent>
+                    <MudTh>Категория</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudChip T="string" Class="ft-category-chip" Style="@($"background:{context.Color}")">@context.Name</MudChip>
+                    </MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                       OnClick="() => DeleteAsync(context.Id)" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudTabPanel>
+        <MudTabPanel Text="Доходы">
+            <MudTable Items="_incomes" Dense="true" Hover="true">
+                <HeaderContent>
+                    <MudTh>Категория</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudChip T="string" Class="ft-category-chip" Style="@($"background:{context.Color}")">@context.Name</MudChip>
+                    </MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                       OnClick="() => DeleteAsync(context.Id)" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudTabPanel>
+    </MudTabs>
+</div>
 
 @code {
     private List<CategoryDto> _expenses = [];
@@ -63,8 +78,16 @@
     {
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;
-        await CategoryService.DeleteAsync(id, userId);
-        Snackbar.Add("Категория удалена", Severity.Success);
-        await LoadAsync();
+
+        try
+        {
+            await CategoryService.DeleteAsync(id, userId);
+            Snackbar.Add("Категория удалена", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

@@ -1,11 +1,11 @@
 @page "/logout"
-@inject SignInManager<ApplicationUser> SignInManager
-@inject NavigationManager Navigation
+@attribute [AllowAnonymous]
 
 @code {
-    protected override async Task OnInitializedAsync()
+    [Inject] private NavigationManager Navigation { get; set; } = null!;
+
+    protected override void OnInitialized()
     {
-        await SignInManager.SignOutAsync();
-        Navigation.NavigateTo("/login", forceLoad: true);
+        Navigation.NavigateTo("/auth/logout", forceLoad: true);
     }
 }

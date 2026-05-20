@@ -1,0 +1,19 @@
+/* === Register.razor — /register === */
+.page-register {
+    display: flex;
+    justify-content: center;
+    padding-top: var(--ft-auth-top-margin);
+}
+
+.page-register .ft-auth-card {
+    width: 100%;
+    max-width: var(--ft-auth-width);
+    padding: 1.5rem;
+}
+
+.page-register .ft-auth-link {
+    display: block;
+    margin-top: 0.75rem;
+}
+
+/* Общие стили форм — см. также login.css (.ft-auth-form) */

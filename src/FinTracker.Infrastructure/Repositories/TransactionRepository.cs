@@ -1,3 +1,4 @@
+using FinTracker.Application.Helpers;
 using FinTracker.Application.Interfaces;
 using FinTracker.Domain.Entities;
 using FinTracker.Domain.Enums;
@@ -52,7 +53,7 @@ public class TransactionRepository : ITransactionRepository
         int month,
         CancellationToken cancellationToken = default)
     {
-        var start = new DateTime(year, month, 1);
+        var start = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
         var end = start.AddMonths(1).AddTicks(-1);
 
         return await _context.Transactions
@@ -75,11 +76,14 @@ public class TransactionRepository : ITransactionRepository
             .AsNoTracking()
             .Where(t => t.UserId == userId && t.Type == TransactionType.Expense);
 
-        if (from.HasValue)
-            query = query.Where(t => t.Date >= from.Value);
+        var fromUtc = UtcDateHelper.ToUtcDate(from);
+        var toUtc = UtcDateHelper.ToUtcDate(to);
 
-        if (to.HasValue)
-            query = query.Where(t => t.Date <= to.Value);
+        if (fromUtc.HasValue)
+            query = query.Where(t => t.Date >= fromUtc.Value);
+
+        if (toUtc.HasValue)
+            query = query.Where(t => t.Date <= toUtc.Value);
 
         return await query
             .GroupBy(t => new { t.CategoryId, t.Category.Name, t.Category.Color })
@@ -102,8 +106,9 @@ public class TransactionRepository : ITransactionRepository
         if (monthCount < 1)
             monthCount = 1;
 
-        var end = DateTime.UtcNow.Date;
-        var start = new DateTime(end.Year, end.Month, 1).AddMonths(-(monthCount - 1));
+        var end = UtcDateHelper.ToUtcDate(DateTime.UtcNow);
+        var start = new DateTime(end.Year, end.Month, 1, 0, 0, 0, DateTimeKind.Utc)
+            .AddMonths(-(monthCount - 1));
 
         var rows = await _context.Transactions
             .AsNoTracking()
@@ -141,8 +146,81 @@ public class TransactionRepository : ITransactionRepository
         return result;
     }
 
+    public async Task<IReadOnlyList<DailyExpenseAggregate>> GetDailyExpensesAsync(
+        string userId,
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken cancellationToken = default)
+    {
+        var fromUtc = UtcDateHelper.ToUtcDate(from);
+        var toUtc = UtcDateHelper.ToUtcDate(to);
+
+        if (!fromUtc.HasValue || !toUtc.HasValue)
+            return [];
+
+        var rows = await _context.Transactions
+            .AsNoTracking()
+            .Where(t =>
+                t.UserId == userId &&
+                t.Type == TransactionType.Expense &&
+                t.Date >= fromUtc.Value &&
+                t.Date <= toUtc.Value)
+            .GroupBy(t => t.Date.Day)
+            .Select(g => new DailyExpenseAggregate
+            {
+                Day = g.Key,
+                Amount = g.Sum(t => t.Amount)
+            })
+            .ToListAsync(cancellationToken);
+
+        var daysInMonth = DateTime.DaysInMonth(fromUtc.Value.Year, fromUtc.Value.Month);
+        var result = new List<DailyExpenseAggregate>(daysInMonth);
+        for (var day = 1; day <= daysInMonth; day++)
+        {
+            result.Add(new DailyExpenseAggregate
+            {
+                Day = day,
+                Amount = rows.FirstOrDefault(r => r.Day == day)?.Amount ?? 0
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<IReadOnlyList<AccountExpenseAggregate>> GetExpensesByAccountAsync(
+        string userId,
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Transactions
+            .AsNoTracking()
+            .Where(t => t.UserId == userId && t.Type == TransactionType.Expense);
+
+        var fromUtc = UtcDateHelper.ToUtcDate(from);
+        var toUtc = UtcDateHelper.ToUtcDate(to);
+
+        if (fromUtc.HasValue)
+            query = query.Where(t => t.Date >= fromUtc.Value);
+
+        if (toUtc.HasValue)
+            query = query.Where(t => t.Date <= toUtc.Value);
+
+        return await query
+            .GroupBy(t => new { t.AccountId, t.Account.Name })
+            .Select(g => new AccountExpenseAggregate
+            {
+                AccountId = g.Key.AccountId,
+                AccountName = g.Key.Name,
+                Amount = g.Sum(t => t.Amount)
+            })
+            .OrderByDescending(x => x.Amount)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Transaction> AddAsync(Transaction transaction, CancellationToken cancellationToken = default)
     {
+        transaction.Date = UtcDateHelper.ToUtcDate(transaction.Date);
         _context.Transactions.Add(transaction);
         await _context.SaveChangesAsync(cancellationToken);
         return transaction;
@@ -150,6 +228,7 @@ public class TransactionRepository : ITransactionRepository
 
     public async Task UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default)
     {
+        transaction.Date = UtcDateHelper.ToUtcDate(transaction.Date);
         _context.Transactions.Update(transaction);
         await _context.SaveChangesAsync(cancellationToken);
     }
@@ -209,11 +288,14 @@ public class TransactionRepository : ITransactionRepository
         if (accountId.HasValue)
             query = query.Where(t => t.AccountId == accountId.Value);
 
-        if (from.HasValue)
-            query = query.Where(t => t.Date >= from.Value);
+        var fromUtc = UtcDateHelper.ToUtcDate(from);
+        var toUtc = UtcDateHelper.ToUtcDate(to);
 
-        if (to.HasValue)
-            query = query.Where(t => t.Date <= to.Value);
+        if (fromUtc.HasValue)
+            query = query.Where(t => t.Date >= fromUtc.Value);
+
+        if (toUtc.HasValue)
+            query = query.Where(t => t.Date <= toUtc.Value);
 
         return query;
     }

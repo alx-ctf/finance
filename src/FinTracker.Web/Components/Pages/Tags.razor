@@ -4,28 +4,31 @@
 @inject CurrentUserService CurrentUser
 @inject ISnackbar Snackbar
 
+<PageStyleLink Href="css/pages/tags.css" />
 <PageTitle>Теги</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Теги</MudText>
+<div class="page-tags ft-page">
+    <MudText Typo="Typo.h4" Class="ft-page-title">Теги</MudText>
 
-<MudGrid Class="mb-4">
-    <MudItem xs="12" sm="4">
-        <MudTextField @bind-Value="_newName" Label="Название" />
-    </MudItem>
-    <MudItem xs="12" sm="3">
-        <MudTextField @bind-Value="_newColor" Label="Цвет" />
-    </MudItem>
-    <MudItem xs="12" sm="3">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync" Class="mt-4">Добавить</MudButton>
-    </MudItem>
-</MudGrid>
+    <MudGrid Class="ft-tag-form">
+        <MudItem xs="12" sm="4">
+            <MudTextField @bind-Value="_newName" Label="Название" />
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudTextField @bind-Value="_newColor" Label="Цвет" />
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync" Class="mt-4">Добавить</MudButton>
+        </MudItem>
+    </MudGrid>
 
-<MudChipSet T="string">
-    @foreach (var t in _items)
-    {
-        <MudChip T="string" Style="@($"background:{t.Color}")" OnClose="() => DeleteAsync(t.Id)">@t.Name</MudChip>
-    }
-</MudChipSet>
+    <MudChipSet T="string">
+        @foreach (var t in _items)
+        {
+            <MudChip T="string" Closeable="true" Class="ft-tag-chip" Style="@($"background:{t.Color}")" OnClose="() => DeleteAsync(t.Id)">@t.Name</MudChip>
+        }
+    </MudChipSet>
+</div>
 
 @code {
     private List<TagDto> _items = [];
@@ -45,17 +48,33 @@
     {
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null || string.IsNullOrWhiteSpace(_newName)) return;
-        await TagService.CreateAsync(userId, new CreateTagDto { Name = _newName, Color = _newColor });
-        _newName = "";
-        Snackbar.Add("Тег добавлен", Severity.Success);
-        await LoadAsync();
+
+        try
+        {
+            await TagService.CreateAsync(userId, new CreateTagDto { Name = _newName, Color = _newColor });
+            _newName = "";
+            Snackbar.Add("Тег добавлен", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 
     private async Task DeleteAsync(int id)
     {
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;
-        await TagService.DeleteAsync(id, userId);
-        await LoadAsync();
+
+        try
+        {
+            await TagService.DeleteAsync(id, userId);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

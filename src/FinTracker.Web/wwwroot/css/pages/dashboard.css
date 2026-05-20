@@ -1,0 +1,120 @@
+/* === Dashboard.razor — / === */
+.page-dashboard {
+    width: 100%;
+    max-width: 100%;
+}
+
+.page-dashboard .ft-page-title {
+    margin-bottom: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.page-dashboard .ft-summary-card {
+    padding: 1.15rem 1.25rem;
+    border-radius: var(--ft-card-radius);
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-dashboard .ft-summary-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: var(--ft-card-radius) var(--ft-card-radius) 0 0;
+    background: var(--ft-color-primary);
+    opacity: 0.85;
+}
+
+.page-dashboard .ft-summary-card:nth-child(2)::before {
+    background: linear-gradient(90deg, var(--ft-neon-income), var(--ft-chart-income));
+    box-shadow: var(--ft-glow-income);
+}
+
+.page-dashboard .ft-summary-card:nth-child(3)::before {
+    background: linear-gradient(90deg, var(--ft-neon-expense), var(--ft-chart-expense));
+    box-shadow: var(--ft-glow-expense);
+}
+
+.page-dashboard .ft-summary-card .mud-typography-subtitle2 {
+    color: var(--ft-color-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.page-dashboard .ft-chart-panel {
+    min-height: 320px;
+}
+
+.page-dashboard .ft-chart-panel--compare {
+    border-color: rgba(148, 163, 184, 0.2);
+}
+
+.page-dashboard .ft-chart-legend-row {
+    display: flex;
+    gap: 1.25rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.page-dashboard .ft-chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ft-color-text-secondary);
+}
+
+.page-dashboard .ft-chart-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+}
+
+.page-dashboard .ft-chart-legend-dot--income {
+    background: var(--ft-chart-income);
+    color: var(--ft-chart-income-glow);
+}
+
+.page-dashboard .ft-chart-legend-dot--expense {
+    background: var(--ft-chart-expense);
+    color: var(--ft-chart-expense-glow);
+}
+
+.page-dashboard .ft-chart-caption {
+    color: var(--ft-color-muted);
+    display: block;
+}
+
+.page-dashboard .ft-chart-empty {
+    color: var(--ft-color-muted);
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.page-dashboard .ft-chart-canvas-wrap {
+    position: relative;
+    height: 260px;
+    width: 100%;
+}
+
+.page-dashboard .ft-chart-canvas-wrap-wide {
+    height: 300px;
+}
+
+.page-dashboard .ft-chart-canvas-wrap canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.page-dashboard .ft-chart-panel-wide {
+    min-height: 340px;
+}

@@ -1,0 +1,9 @@
+@* Подключение CSS страницы/диалога. Пример: <PageStyleLink Href="css/pages/dashboard.css" /> *@
+<HeadContent>
+    <link rel="stylesheet" href="@Href" />
+</HeadContent>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Href { get; set; } = "";
+}

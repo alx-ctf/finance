@@ -2,7 +2,9 @@
 @inject CurrentUserService CurrentUser
 @inject ISnackbar Snackbar
 
-<MudDialog>
+<PageStyleLink Href="css/dialogs/category.css" />
+
+<MudDialog Class="dialog-category">
     <DialogContent>
         <MudTextField @bind-Value="_model.Name" Label="Название" Required="true" Class="mb-3" />
         <MudSelect T="TransactionType" @bind-Value="_model.Type" Label="Тип" Class="mb-3">
@@ -28,8 +30,16 @@
     {
         var userId = await CurrentUser.GetUserIdAsync();
         if (userId is null) return;
-        await CategoryService.CreateAsync(userId, _model);
-        Snackbar.Add("Категория создана", Severity.Success);
-        MudDialog.Close(DialogResult.Ok(true));
+
+        try
+        {
+            await CategoryService.CreateAsync(userId, _model);
+            Snackbar.Add("Категория создана", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

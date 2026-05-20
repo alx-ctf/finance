@@ -1,0 +1,37 @@
+/* === NavMenu.razor === */
+.ft-nav-menu {
+    padding: 1rem 0.75rem;
+}
+
+.ft-nav-menu .mud-nav-link {
+    border-radius: var(--ft-radius-md);
+    margin: 4px 0;
+    padding: 0.65rem 1rem;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    color: var(--ft-color-text-secondary) !important;
+}
+
+.ft-nav-menu .mud-nav-link:hover {
+    background: rgba(13, 148, 136, 0.08) !important;
+    color: var(--ft-color-primary) !important;
+}
+
+[data-theme="dark"] .ft-nav-menu .mud-nav-link:hover {
+    background: rgba(45, 212, 191, 0.1) !important;
+}
+
+.ft-nav-menu .mud-nav-link.active {
+    font-weight: 600;
+    color: var(--ft-color-primary) !important;
+    background: rgba(13, 148, 136, 0.12) !important;
+    box-shadow: inset 3px 0 0 var(--ft-neon-primary), var(--ft-glow-primary);
+}
+
+[data-theme="dark"] .ft-nav-menu .mud-nav-link.active {
+    background: rgba(45, 212, 191, 0.15) !important;
+    box-shadow: inset 3px 0 0 var(--ft-neon-primary), 0 0 12px rgba(94, 234, 212, 0.15);
+}
+
+.ft-nav-menu .mud-nav-link .mud-icon-root {
+    color: inherit;
+}
